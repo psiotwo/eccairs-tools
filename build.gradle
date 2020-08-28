@@ -11,8 +11,6 @@ mainClassName = 'com.github.psiotwo.eccairs.snomed.snowowl.PopulateSnowowl'
 group 'com.github.psiotwo'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.9
-
 repositories {
     mavenCentral()
 }
