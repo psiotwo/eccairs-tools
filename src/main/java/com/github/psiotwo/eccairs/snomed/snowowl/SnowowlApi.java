@@ -1,11 +1,9 @@
 package com.github.psiotwo.eccairs.snomed.snowowl;
 
-
 import static com.github.psiotwo.eccairs.snomed.SnomedConstants.ENTIRE_TERM_CASE_SENSITIVE;
 import static com.github.psiotwo.eccairs.snomed.SnomedConstants.EN_UK;
 import static com.github.psiotwo.eccairs.snomed.SnomedConstants.EN_US;
 import static com.github.psiotwo.eccairs.snomed.SnomedConstants.PK_NAMESPACE;
-
 
 import com.github.psiotwo.eccairs.snomed.SnomedConstants;
 import com.github.psiotwo.eccairs.snomed.SnomedCtStoreApi;
@@ -17,6 +15,7 @@ import com.github.psiotwo.eccairs.snomed.snowowl.model.CreateRelationshipDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
@@ -28,10 +27,15 @@ public class SnowowlApi implements SnomedCtStoreApi {
     public static final String SNOMED_CT_V_3 = "/snomed-ct/v3/";
     private final String serverUrl;
 
+    private final Map<String,String> acceptabilityMap = new HashMap<>();
+
     public SnowowlApi(String serverUrl) {
         this.serverUrl = serverUrl;
         Unirest.config()
             .socketTimeout(0);
+
+        acceptabilityMap.put(EN_US + "", "PREFERRED");
+        acceptabilityMap.put(EN_UK + "", "PREFERRED");
     }
 
     public String createBranch(final String parentPath, final String childName)
@@ -115,11 +119,8 @@ public class SnowowlApi implements SnomedCtStoreApi {
             .setNamespaceId(PK_NAMESPACE + "")
             .setCaseSignificanceId(ENTIRE_TERM_CASE_SENSITIVE + "")
             .setTerm(term)
-            .setAcceptability(Map.of(
-                EN_US + "", "PREFERRED",
-                EN_UK + "", "PREFERRED"
-            )).
-                setTypeId(typeId);
+            .setAcceptability(acceptabilityMap)
+            .setTypeId(typeId);
     }
 
     private CreateConceptDescriptionDto createConceptDescriptionDtoInModel(
@@ -130,11 +131,8 @@ public class SnowowlApi implements SnomedCtStoreApi {
             .setLanguageCode("en")
             .setCaseSignificanceId(ENTIRE_TERM_CASE_SENSITIVE + "")
             .setTerm(preferredLabel)
-            .setAcceptability(Map.of(
-                EN_US + "", "PREFERRED",
-                EN_UK + "", "PREFERRED"
-            )).
-                setTypeId(typeId);
+            .setAcceptability(acceptabilityMap)
+            .setTypeId(typeId);
     }
 
     private CreateConceptRelationshipDto createConceptRelationshipDtoInModel(
