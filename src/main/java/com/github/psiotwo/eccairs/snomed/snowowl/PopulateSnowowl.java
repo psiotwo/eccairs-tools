@@ -39,10 +39,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class PopulateSnowowl {
-    private static final String newBranch = "ECCAIRS-3_4_0_2-TEST";
-
-    // ECCAIRS branch
-    private static final String branch = "MAIN/" + newBranch;
 
     // ECCAIRS module
     private static final long moduleId = 21000250107l;
@@ -62,11 +58,14 @@ public class PopulateSnowowl {
 
     private List<Integer> filteredValueLists = Arrays.asList(5, 16, 21, 167, 215, 228);
 
+    private String branch;
 
     PopulateSnowowl(final String serverUrl,
+                    final String newBranch,
                     final String taxonomyFile)
         throws JsonProcessingException, UnirestException {
         this.api = new SnowowlApi(serverUrl);
+        this.branch = "MAIN/" + newBranch;
         final EccairsDictionary d = new EccairsTaxonomyParser().parse(new File(taxonomyFile));
         api.start();
 
@@ -199,6 +198,6 @@ public class PopulateSnowowl {
     }
 
     public static void main(String[] args) throws UnirestException, JsonProcessingException {
-        new PopulateSnowowl(args[0], args[1]);
+        new PopulateSnowowl(args[0], args[1], args[2]);
     }
 }
