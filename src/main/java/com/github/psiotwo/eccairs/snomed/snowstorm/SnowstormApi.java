@@ -1,13 +1,13 @@
-package com.github.psiotwo.eccairs.snomed.snowowl;
+package com.github.psiotwo.eccairs.snomed.snowstorm;
 
 import static com.github.psiotwo.eccairs.snomed.SnomedConstants.EN_UK;
 import static com.github.psiotwo.eccairs.snomed.SnomedConstants.EN_US;
-import static com.github.psiotwo.eccairs.snomed.SnomedConstants.PK_NAMESPACE;
+import static com.github.psiotwo.eccairs.snomed.snowowl.SnowowlDtoHelper.postConceptPayloadInModel;
+import static com.github.psiotwo.eccairs.snomed.snowowl.SnowowlDtoHelper.postDescriptionPayloadInModel;
+import static com.github.psiotwo.eccairs.snomed.snowowl.SnowowlDtoHelper.postRelationshipPayloadInModel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.psiotwo.eccairs.snomed.SnomedCtStoreApi;
-import com.github.psiotwo.eccairs.snomed.snowowl.model.CreateRelationshipDto;
 import java.util.HashMap;
 import java.util.Map;
 import kong.unirest.HttpResponse;
@@ -15,14 +15,13 @@ import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
 import kong.unirest.json.JSONObject;
 
-public class SnowowlApi implements SnomedCtStoreApi {
+public class SnowstormApi implements SnomedCtStoreApi {
 
-    public static final String SNOMED_CT_V_3 = "/snomed-ct/v3/";
     private final String serverUrl;
 
     private final Map<String,String> acceptabilityMap = new HashMap<>();
 
-    public SnowowlApi(String serverUrl) {
+    public SnowstormApi(String serverUrl) {
         this.serverUrl = serverUrl;
         Unirest.config()
             .socketTimeout(0);
@@ -38,7 +37,7 @@ public class SnowowlApi implements SnomedCtStoreApi {
         object.put("name", childName);
 
         final HttpResponse<String> jsonResponse
-            = Unirest.post(serverUrl + SNOMED_CT_V_3 + "branches")
+            = Unirest.post(serverUrl + "branches")
             .header("content-type", "application/json")
             .body(object)
             .asString();
@@ -79,9 +78,9 @@ public class SnowowlApi implements SnomedCtStoreApi {
                               final long moduleId, String semanticTag, Long id)
         throws UnirestException, JsonProcessingException {
         final HttpResponse<String> jsonResponse
-            = Unirest.post(serverUrl + SNOMED_CT_V_3 + branch + "/concepts")
+            = Unirest.post(serverUrl + "/browser/" + branch + "/concepts")
             .header("content-type", "application/json")
-            .body(SnowowlDtoHelper.postConceptPayloadInModel(conceptPL, parentId, moduleId, semanticTag, id))
+            .body(postConceptPayloadInModel(conceptPL, parentId, moduleId, semanticTag, id))
             .asString();
         if (jsonResponse.isSuccess()) {
             String location = jsonResponse.getHeaders().get("Location").get(0);
@@ -96,31 +95,12 @@ public class SnowowlApi implements SnomedCtStoreApi {
         }
     }
 
-    public String postRelationshipPayloadInModel(final long source, final long target,
-                                                 final long attribute,
-                                                 final long moduleId)
-        throws JsonProcessingException {
-        final CreateRelationshipDto createConceptDto = new CreateRelationshipDto()
-            .setActive(true)
-            .setModuleId(moduleId)
-            .setCommitComment("Creating relationship " + attribute)
-            .setDefaultModuleId(moduleId)
-            .setNamespaceId(PK_NAMESPACE + "")
-            .setSourceId(source)
-            .setTypeId(attribute)
-            .setDestinationId(target);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String s = objectMapper.writeValueAsString(createConceptDto);
-        return s;
-    }
-
     public void addRelationship(final long source, final long target, final long attribute,
                                 final String branch,
                                 final long moduleId)
         throws UnirestException, JsonProcessingException {
         final HttpResponse<String> jsonResponse
-            = Unirest.post(serverUrl + SNOMED_CT_V_3 + branch + "/relationships")
+            = Unirest.post(serverUrl + "/" + branch + "/relationships")
             .header("content-type", "application/json")
             .body(postRelationshipPayloadInModel(source, target, attribute, moduleId))
             .asString();
@@ -140,10 +120,10 @@ public class SnowowlApi implements SnomedCtStoreApi {
                                final long moduleId)
         throws UnirestException, JsonProcessingException {
         final HttpResponse<String> jsonResponse
-            = Unirest.post(serverUrl + SNOMED_CT_V_3 + branch + "/descriptions")
+            = Unirest.post(serverUrl + "/" + branch + "/descriptions")
             .header("content-type", "application/json")
             .body(
-                SnowowlDtoHelper.postDescriptionPayloadInModel(conceptId, description, descriptionTypeId, moduleId))
+                postDescriptionPayloadInModel(conceptId, description, descriptionTypeId, moduleId))
             .asString();
         if (jsonResponse.isSuccess()) {
             return;
