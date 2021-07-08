@@ -17,16 +17,16 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/com.opencsv/opencsv
-    compile group: 'com.opencsv', name: 'opencsv', version: '3.7'
+    implementation group: 'com.opencsv', name: 'opencsv', version: '3.7'
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
-    compile group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '2.3.3'
+    implementation group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '2.3.3'
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
     // https://mvnrepository.com/artifact/com.mashape.unirest/unirest-java
-    compile group: 'com.konghq', name: 'unirest-java', version: '3.7.02'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
+    implementation group: 'com.konghq', name: 'unirest-java', version: '3.7.02'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.7.4'
 
-    runtime group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.3-b02'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.3-b02'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
 
