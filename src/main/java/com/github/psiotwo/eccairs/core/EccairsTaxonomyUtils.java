@@ -4,6 +4,7 @@ import com.github.psiotwo.eccairs.core.model.EccairsAttribute;
 import com.github.psiotwo.eccairs.core.model.EccairsDictionary;
 import com.github.psiotwo.eccairs.core.model.EccairsEntity;
 import com.github.psiotwo.eccairs.core.model.EccairsTerm;
+import com.github.psiotwo.eccairs.core.model.EccairsValue;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -47,7 +48,7 @@ public class EccairsTaxonomyUtils {
         return entities(d)
             .stream()
             .filter(e -> e.getAttributes() != null)
-            .flatMap( e -> e.getAttributes().stream() )
+            .flatMap(e -> e.getAttributes().stream())
             .collect(Collectors.toList());
     }
 
@@ -55,7 +56,7 @@ public class EccairsTaxonomyUtils {
      * Prints basic statistics about an ECCAIRS dictionary.
      *
      * @param dictionary ECCAIRS dictionary
-     * @param os PrintStream to write to
+     * @param os         PrintStream to write to
      */
     public static void statistics(final EccairsDictionary dictionary, final PrintStream os) {
         os.println(dictionary.toString());
@@ -72,10 +73,40 @@ public class EccairsTaxonomyUtils {
         final String pluralLabel,
         final PrintStream os) {
         os.println(" - # " + pluralLabel + " = " + terms.size());
-        os.println(" - # distinct " + pluralLabel + " = " + terms.stream().map(e -> e.getId()).distinct().count());
+        os.println(
+            " - # distinct " + pluralLabel + " = " + terms.stream().map(e -> e.getId()).distinct()
+                .count());
         os.println(terms.stream()
             .sorted(Comparator.comparingInt(e -> e.getId()))
             .map(e -> "        - " + e.getId() + " - " + e.getDescription())
             .collect(Collectors.joining("\n")));
+    }
+
+    public static List<EccairsValue> getValues(final EccairsAttribute a) {
+        final List<EccairsValue> list = new ArrayList<>();
+        if (a.getValues() != null) {
+            a.getValues().forEach(v ->
+                getValues(v, list)
+            );
+        }
+        return list;
+    }
+
+    private static void getValues(final EccairsValue a, final List<EccairsValue> list) {
+        list.add(a);
+        if (a.getValues() != null) {
+            a.getValues().forEach(v -> {
+                getValues(v, list);
+            });
+        }
+    }
+
+    public static List<String> filterValues(final List<EccairsValue> values,
+                                            final List<Integer> valueIds) {
+        return
+            values
+                .stream().filter(value -> valueIds.contains(value.getId()))
+                .map(v -> v.getId() + " - " + v.getDescription())
+                .collect(Collectors.toList());
     }
 }

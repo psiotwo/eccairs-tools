@@ -82,7 +82,7 @@ public class RitToEccairsComparator {
 
             List<Integer> list =
                 e.getValues().stream().map(Value::getValueId).collect(Collectors.toList());
-            List<EccairsValue> values = getValues(ex.get());
+            List<EccairsValue> values = EccairsTaxonomyUtils.getValues(ex.get());
             List<Integer> valueIds =
                 values.stream().map(v -> v.getId()).collect(Collectors.toList());
             if (!list.equals(valueIds)) {
@@ -98,27 +98,6 @@ public class RitToEccairsComparator {
                     .map(exe -> values.stream().filter(x -> x.getId() == exe).findAny().get())
                     .map(x -> x.getId() + "-" + x.getDescription()).collect(Collectors.toList()));
             }
-            ;
         }
     }
-
-    private static List<EccairsValue> getValues(EccairsAttribute a) {
-        final List<EccairsValue> list = new ArrayList<>();
-        if (a.getValues() != null) {
-            a.getValues().forEach(v ->
-                getValues(v, list)
-            );
-        }
-        return list;
-    }
-
-    private static void getValues(EccairsValue a, List<EccairsValue> list) {
-        list.add(a);
-        if (a.getValues() != null) {
-            a.getValues().forEach(v -> {
-                getValues(v, list);
-            });
-        }
-    }
-
 }

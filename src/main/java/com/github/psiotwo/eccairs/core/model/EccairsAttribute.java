@@ -31,7 +31,7 @@ public class EccairsAttribute implements EccairsTerm {
     @XmlAttribute(name = "DATA-TYPE")
     private String dataType;
 
-    @XmlAttribute(name = "DATA-TYPE")
+    @XmlAttribute(name = "SIZE")
     private String size;
 
     @XmlAttribute(name = "MIN-INSTANCE")
@@ -45,6 +45,9 @@ public class EccairsAttribute implements EccairsTerm {
 
     @XmlAttribute(name = "XSD-TAG")
     private String xsdTag;
+
+    @XmlAttribute(name = "DOMAINS")
+    private String domains;
 
     @XmlElementWrapper(name = "VALUES")
     @XmlElement(name = "VALUE")
