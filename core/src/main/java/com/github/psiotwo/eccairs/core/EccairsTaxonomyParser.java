@@ -8,6 +8,7 @@ import java.io.InputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.helpers.DefaultValidationEventHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -40,10 +41,5 @@ public class EccairsTaxonomyParser {
             log.error("An exception during unmarshalling.", e);
         }
         return null;
-    }
-
-    public static void main(String[] args) {
-        final EccairsDictionary dictionary = new EccairsTaxonomyParser().parse(new File(args[0]));
-        EccairsTaxonomyUtils.statistics(dictionary, System.out);
     }
 }

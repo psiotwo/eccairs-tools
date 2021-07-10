@@ -8,16 +8,16 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.experimental.Accessors;
 
 /**
  * Main element of an ECCAIRS/RIT data format. It encapsulates all incident report sections.
  */
 @Data
+@Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
 public class EccairsEntity implements EccairsTerm {
-    @XmlAttribute(name = "ID")
+    @XmlAttribute(name = "ID", required = true)
     private int id;
     @XmlAttribute(name = "DESCRIPTION")
     private String description;

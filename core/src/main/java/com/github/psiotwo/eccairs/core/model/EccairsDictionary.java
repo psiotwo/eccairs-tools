@@ -1,23 +1,17 @@
 package com.github.psiotwo.eccairs.core.model;
 
-import com.github.psiotwo.eccairs.core.EccairsTaxonomyUtils;
-import java.io.PrintStream;
 import java.text.MessageFormat;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.experimental.Accessors;
 
 @Data
+@Accessors(chain = true)
 @XmlRootElement(name = "DICTIONARY")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class EccairsDictionary {

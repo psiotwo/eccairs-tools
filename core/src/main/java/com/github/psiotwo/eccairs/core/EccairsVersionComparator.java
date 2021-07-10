@@ -71,9 +71,9 @@ public class EccairsVersionComparator {
                         newA.getId(),
                         newA.getDescription(),
                         newD.getVersion(),
-                        EccairsTaxonomyUtils.filterValues(newValues, newNotOrigValues),
+                        EccairsTaxonomyUtils.renderValues(newValues, newNotOrigValues),
                         origD.getVersion(),
-                        EccairsTaxonomyUtils.filterValues(origValues, origNotNewValues)
+                        EccairsTaxonomyUtils.renderValues(origValues, origNotNewValues)
                     );
                 }
             }

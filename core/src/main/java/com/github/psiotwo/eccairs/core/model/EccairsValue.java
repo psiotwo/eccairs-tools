@@ -6,11 +6,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
+@Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
 public class EccairsValue implements EccairsTerm {
-    @XmlAttribute(name = "ID")
+    @XmlAttribute(name = "ID", required = true)
     private int id;
     @XmlAttribute(name = "DESCRIPTION")
     private String description;

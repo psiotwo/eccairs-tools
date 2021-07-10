@@ -82,12 +82,16 @@ public class EccairsTaxonomyUtils {
             .collect(Collectors.joining("\n")));
     }
 
-    public static List<EccairsValue> getValues(final EccairsAttribute a) {
+    /**
+     * Returns attribute list of all values (recursively) subordinated to the attribute.
+     *
+     * @param attribute ECCAIRS attribute
+     * @return list of values
+     */
+    public static List<EccairsValue> getValues(final EccairsAttribute attribute) {
         final List<EccairsValue> list = new ArrayList<>();
-        if (a.getValues() != null) {
-            a.getValues().forEach(v ->
-                getValues(v, list)
-            );
+        if (attribute.getValues() != null) {
+            attribute.getValues().forEach(v -> getValues(v, list));
         }
         return list;
     }
@@ -95,13 +99,11 @@ public class EccairsTaxonomyUtils {
     private static void getValues(final EccairsValue a, final List<EccairsValue> list) {
         list.add(a);
         if (a.getValues() != null) {
-            a.getValues().forEach(v -> {
-                getValues(v, list);
-            });
+            a.getValues().forEach(v -> getValues(v, list));
         }
     }
 
-    public static List<String> filterValues(final List<EccairsValue> values,
+    public static List<String> renderValues(final List<EccairsValue> values,
                                             final List<Integer> valueIds) {
         return
             values
