@@ -10,6 +10,7 @@ import com.opencsv.CSVReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,12 +43,12 @@ public class RitParser {
 
     private void parseAttributeList(final RitModel model) {
         try (CSVReader csvReader
-                 = new CSVReader(new FileReader(dir + DOCUMENTS_ATTRIBUTE_LIST_CSV), '\t',
-            CSVParser.DEFAULT_QUOTE_CHARACTER, 1);) {
-            String[] values = null;
+                 = new CSVReader(new FileReader(dir + DOCUMENTS_ATTRIBUTE_LIST_CSV, Charset.defaultCharset()), '\t',
+            CSVParser.DEFAULT_QUOTE_CHARACTER, 1)) {
+            String[] values;
             while ((values = csvReader.readNext()) != null) {
                 //        "Entity ID"	"Entity name"	"Entity synonym for RIT"	"EntityID path"	"Entity name path"	"Entity name path for RIT"	"Attribute ID"	"Short Description"	"Detailed Description"	"Attribute synonym for RIT"
-                Integer attributeId = Integer.parseInt(values[6]);
+                int attributeId = Integer.parseInt(values[6]);
                 RitAttribute a = new RitAttribute()
                     .setId(attributeId)
                     .setShortDescription(values[7])
@@ -74,9 +75,9 @@ public class RitParser {
 
     private void parseAttributes(final RitModel model) {
         try (CSVReader csvReader
-                 = new CSVReader(new FileReader(dir + MAPPINGS_ATTRIBUTES_CSV), '\t',
-            CSVParser.DEFAULT_QUOTE_CHARACTER, 1);) {
-            String[] values = null;
+                 = new CSVReader(new FileReader(dir + MAPPINGS_ATTRIBUTES_CSV, Charset.defaultCharset()), '\t',
+            CSVParser.DEFAULT_QUOTE_CHARACTER, 1)) {
+            String[] values;
             while ((values = csvReader.readNext()) != null) {
                 final Integer id = Integer.parseInt(values[ATTRIBUTE_ID]);
                 if (!model.getAttributes().containsKey(id)) {
@@ -116,8 +117,8 @@ public class RitParser {
         final ValueList vl = new ValueList();
         vl.setId(f.getName().substring(0, f.getName().lastIndexOf(".")));
         try (CSVReader csvReader
-                 = new CSVReader(new FileReader(f), '\t', CSVParser.DEFAULT_QUOTE_CHARACTER, 1);) {
-            String[] values = null;
+                 = new CSVReader(new FileReader(f, Charset.defaultCharset()), '\t', CSVParser.DEFAULT_QUOTE_CHARACTER, 1)) {
+            String[] values;
             while ((values = csvReader.readNext()) != null) {
                 // Value Synonym	Value ID
                 final Integer id = Integer.parseInt(values[1]);
@@ -133,7 +134,7 @@ public class RitParser {
         }
     }
 
-    public RitModel parse() throws IOException {
+    public RitModel parse() {
         log.info("Parsing RIT distribution");
         final RitModel model = new RitModel();
         model.setDir(dir);
@@ -148,6 +149,7 @@ public class RitParser {
             .listFiles(n ->
                 n.getName().startsWith("VL")
             );
+        assert valueListFiles != null;
         for (File f : valueListFiles) {
             parseValueList(model, f);
         }
@@ -155,7 +157,7 @@ public class RitParser {
     }
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         final RitParser m = new RitParser(args[0]);
         final RitModel model = m.parse();
         System.out.println(model);

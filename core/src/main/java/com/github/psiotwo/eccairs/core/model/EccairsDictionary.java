@@ -28,16 +28,13 @@ public class EccairsDictionary {
     private List<EccairsEntity> entities;
 
     public String toString() {
-        return new StringBuilder()
-            .append(MessageFormat.format("ECCAIRS Taxonomy {0} (ver. {1}), language {2}",
-                this.getTaxonomy(),
-                this.getVersion(),
-                this.getLanguage())
-            )
-            .append(System.lineSeparator())
-            .append(MessageFormat.format(" - # root entities = {0}",
-                this.getEntities().size()))
-            .append(System.lineSeparator())
-            .toString();
+        return MessageFormat.format("ECCAIRS Taxonomy {0} (ver. {1}), language {2}",
+            this.getTaxonomy(),
+            this.getVersion(),
+            this.getLanguage()) +
+            System.lineSeparator() +
+            MessageFormat.format(" - # root entities = {0}",
+                this.getEntities().size()) +
+            System.lineSeparator();
     }
 }

@@ -12,7 +12,8 @@ public class PopulateSnowStorm {
 //        final PopulateSnowowl pso = new PopulateSnowowl(args[0], args[1], args[2]);
 
         final SnowstormApi snowstorm = new SnowstormApi(args[0]);
-        final PopulateSnomedServer pop = new PopulateSnomedServer(snowstorm, args[1], args[2]);
+//        final PopulateSnomedServer pop =
+        new PopulateSnomedServer(snowstorm, args[1], args[2]);
 //
 //        snowstorm.createBranch("MAIN",args[1]);
 //        File f = new File(args[3]);

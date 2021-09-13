@@ -39,24 +39,24 @@ import lombok.extern.slf4j.Slf4j;
 public class PopulateSnomedServer {
 
     // ECCAIRS module
-    private static final long moduleId = 21000250107l;
+    private static final long moduleId = 21000250107L;
 
-    private SnomedCtStoreApi api;
+    private final SnomedCtStoreApi api;
 
-    private long entityConceptId = 121000250102l;
-    private long objectAttributeConceptId = 131000250100l;
-    private long dataAttributeConceptId = 151000250107l;
-    private long valueConceptId = 141000250109l;
-    private long hasSubEntity = 1121000250103l;
-    private long hasId = 1931000250104l;
+    private final long entityConceptId = 121000250102L;
+    private final long objectAttributeConceptId = 131000250100L;
+    private final long dataAttributeConceptId = 151000250107L;
+    private final long valueConceptId = 141000250109L;
+    private final long hasSubEntity = 1121000250103L;
+    private final long hasId = 1931000250104L;
 
     private long entityCount = 0;
     private long attributeCount = 0;
     private long valueCount = 0;
 
-    private List<Integer> filteredValueLists = Arrays.asList(5, 16, 21, 167, 215, 228);
+    private final List<Integer> filteredValueLists = Arrays.asList(5, 16, 21, 167, 215, 228);
 
-    private String branch;
+    private final String branch;
 
     public PopulateSnomedServer(final SnomedCtStoreApi api,
                                 final String newBranch,
@@ -76,7 +76,7 @@ public class PopulateSnomedServer {
         api.finish();
     }
 
-    private void initModel() throws JsonProcessingException, UnirestException {
+    private void initModel() throws UnirestException {
         try {
             api.createConcept("ECCAIRS entity", SnomedConstants.CONCEPT, branch, moduleId, "entity",
                 entityConceptId);
@@ -168,13 +168,14 @@ public class PopulateSnomedServer {
                 branch,
                 moduleId
             );
-            if (!filteredValueLists.contains(a)) {
+            if (!filteredValueLists.contains(a.getId())) {
                 for (final EccairsValue eccairsValue : a.getValues()) {
                     storeValue(valueListSctid, eccairsValue);
                 }
             }
         } else {
-            long attributeSctid = addConcept(a, dataAttributeConceptId, "attribute");
+//            long attributeSctid =
+            addConcept(a, dataAttributeConceptId, "attribute");
             // TODO data attributes
         }
     }

@@ -9,8 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RitDiff {
-    private RitModel m1;
-    private RitModel m2;
+    private final RitModel m1;
+    private final RitModel m2;
 
     public RitDiff(RitModel m1, RitModel m2) {
         this.m1 = m1;
@@ -39,23 +39,21 @@ public class RitDiff {
             }
 
             for (RitAttribute a : e.getAttributes()) {
-                if (!dEntity.getAttributes().stream().map(aa -> aa.getId()).collect(
+                if (!dEntity.getAttributes().stream().map(RitAttribute::getId).collect(
                     Collectors.toList()).contains(a.getId())) {
                     log.info(
                         " - [A NOT PRESENT] {} - {} in {}", a.getId(), a.getSynonymForRit(),
                         m2.getDir());
-                    continue;
                 } else if (!dEntity.getAttributes().contains(a)) {
                     log.info(
                         " - [A CHANGED] {} - {} in {}", a.getId(), a.getSynonymForRit(),
                         m2.getDir());
-                    continue;
                 }
             }
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         final String d1d = args[0];
         final String d2d = args[1];
         new RitDiff(

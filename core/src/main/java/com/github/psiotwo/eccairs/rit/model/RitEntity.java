@@ -3,8 +3,6 @@ package com.github.psiotwo.eccairs.rit.model;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 
 @Data

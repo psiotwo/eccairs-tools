@@ -1,26 +1,34 @@
 package com.github.psiotwo.eccairs.rit.util;
 
+import static java.util.Objects.requireNonNull;
+
+
 import com.github.psiotwo.eccairs.rit.model.Value;
 import com.github.psiotwo.eccairs.rit.model.ValueList;
 import com.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class E5XValueList2CSV {
 
-    private String dir;
+    private final String dir;
 
     public E5XValueList2CSV(String dir) {
         this.dir = dir;
     }
 
     public void export() {
-        Arrays.stream(new File(dir + "/documented schema")
-            .listFiles(f -> f.getName().startsWith("VL")))
+        final File[] files = new File(dir + "/documented schema")
+            .listFiles(f -> f.getName().startsWith("VL"));
+        if (files == null) {
+            return;
+        }
+        Arrays.stream(requireNonNull(files))
             .filter(f -> !f.getName().startsWith("VL1085_")) // black listing country list
             .filter(f -> !f.getName().startsWith("VL1182_")) // black listing aircraft types
             .filter(f -> !f.getName().startsWith("VL1016_")) // black listing operators
@@ -30,7 +38,8 @@ public class E5XValueList2CSV {
                     String vlName = ff.getName().substring(0, ff.getName().length() - 4);
                     final ValueList valueList = new E5XXSDValueListParser().parse(vlName, ff);
                     try {
-                        final CSVWriter w = new CSVWriter(new FileWriter(vlName + ".csv"));
+                        final CSVWriter w =
+                            new CSVWriter(new FileWriter(vlName + ".csv", Charset.defaultCharset()));
                         w.writeNext(new String[] {"valuelistName", "valueId", "valueDescription",
                             "valueDetailedDescription", "valueExplanation"});
 
@@ -39,7 +48,7 @@ public class E5XValueList2CSV {
                                 v.getDetailedDescription(), v.getExplanation()});
                         }
                     } catch (IOException e) {
-                        log.error("Error during valuelist serialization.",e);
+                        log.error("Error during valuelist serialization.", e);
                     }
                 }
             );

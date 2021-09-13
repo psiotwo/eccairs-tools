@@ -47,31 +47,24 @@ public class EccairsEntity implements EccairsTerm {
     private Set<EccairsEntity> entities;
 
     public String toString() {
-        return new StringBuilder()
-            .append(MessageFormat.format("{0} - {1}",
-                this.getId(),
-                this.getDescription())
-            )
-            .append(System.lineSeparator())
-            .append(MessageFormat.format(" - # entities = {0}, # attributes = {1}",
+        return MessageFormat.format("{0} - {1}",
+            this.getId(),
+            this.getDescription()) +
+            System.lineSeparator() +
+            MessageFormat.format(" - # entities = {0}, # attributes = {1}",
                 this.getEntities(),
-                this.getAttributes())
-            )
-            .append(System.lineSeparator())
-            .append(MessageFormat.format(" - detailed description: {0}",
-                this.getDetailedDescription())
-            )
-            .append(System.lineSeparator())
-            .append(MessageFormat.format(" - explanation: {0}",
-                this.getExplanation())
-            )
-            .append(System.lineSeparator())
-            .append(MessageFormat.format(" - minInstance: {0}, maxInstance: {1}, isLink: {2}",
+                this.getAttributes()) +
+            System.lineSeparator() +
+            MessageFormat.format(" - detailed description: {0}",
+                this.getDetailedDescription()) +
+            System.lineSeparator() +
+            MessageFormat.format(" - explanation: {0}",
+                this.getExplanation()) +
+            System.lineSeparator() +
+            MessageFormat.format(" - minInstance: {0}, maxInstance: {1}, isLink: {2}",
                 this.getMinInstance(),
                 this.getMaxInstance(),
-                this.getIsLink())
-            )
-            .append(System.lineSeparator())
-            .toString();
+                this.getIsLink()) +
+            System.lineSeparator();
     }
 }

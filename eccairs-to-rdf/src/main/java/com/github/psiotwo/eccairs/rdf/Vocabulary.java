@@ -3,8 +3,6 @@ package com.github.psiotwo.eccairs.rdf;
 public class Vocabulary {
     public final static String ONTOLOGY_IRI_model =
         "http://onto.fel.cvut.cz/ontologies/eccairs/model";
-    public final static String ONTOLOGY_IRI_model_generated =
-        "http://onto.fel.cvut.cz/ontologies/eccairs/model-generated";
     public static final String NS = ONTOLOGY_IRI_model + "/";
     public final static String s_p_has_data_type = NS + "has-data-type";
     public final static String s_p_has_explanation = NS + "has-explanation";

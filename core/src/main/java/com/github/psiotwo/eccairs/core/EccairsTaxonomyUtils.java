@@ -16,12 +16,12 @@ public class EccairsTaxonomyUtils {
     /**
      * Lists all ECCAIRS entities in the dictionary.
      *
-     * @param d
-     * @return
+     * @param dictionary dictionary to list entities from
+     * @return list of entities
      */
-    public static List<EccairsEntity> entities(EccairsDictionary d) {
+    public static List<EccairsEntity> entities(EccairsDictionary dictionary) {
         final List<EccairsEntity> set = new ArrayList<>();
-        d.getEntities().forEach(e ->
+        dictionary.getEntities().forEach(e ->
             entities(e, set)
         );
         return set;
@@ -32,20 +32,19 @@ public class EccairsTaxonomyUtils {
             set.add(e);
         }
         if (e.getEntities() != null) {
-            e.getEntities().forEach(c -> {
-                entities(c, set);
-            });
+            e.getEntities().forEach(c ->
+                entities(c, set));
         }
     }
 
     /**
      * Lists all ECCAIRS attributes in all entities in the dictionary.
      *
-     * @param d
-     * @return
+     * @param dictionary dictionary to analyse
+     * @return list of attributes
      */
-    public static List<EccairsAttribute> attributes(EccairsDictionary d) {
-        return entities(d)
+    public static List<EccairsAttribute> attributes(EccairsDictionary dictionary) {
+        return entities(dictionary)
             .stream()
             .filter(e -> e.getAttributes() != null)
             .flatMap(e -> e.getAttributes().stream())
@@ -74,10 +73,10 @@ public class EccairsTaxonomyUtils {
         final PrintStream os) {
         os.println(" - # " + pluralLabel + " = " + terms.size());
         os.println(
-            " - # distinct " + pluralLabel + " = " + terms.stream().map(e -> e.getId()).distinct()
+            " - # distinct " + pluralLabel + " = " + terms.stream().map(EccairsTerm::getId).distinct()
                 .count());
         os.println(terms.stream()
-            .sorted(Comparator.comparingInt(e -> e.getId()))
+            .sorted(Comparator.comparingInt(EccairsTerm::getId))
             .map(e -> "        - " + e.getId() + " - " + e.getDescription())
             .collect(Collectors.joining("\n")));
     }

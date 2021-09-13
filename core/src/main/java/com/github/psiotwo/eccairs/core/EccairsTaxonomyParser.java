@@ -8,21 +8,20 @@ import java.io.InputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.helpers.DefaultValidationEventHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EccairsTaxonomyParser {
 
     /**
-     * Parses an ECCAIRS taxonomy file
+     * Parses an ECCAIRS taxonomy file.
      *
-     * @param file
-     * @return
+     * @param file file to parse
+     * @return parsed ECCAIRS dictionary
      */
     public EccairsDictionary parse(File file) {
         log.info("Processing file '{}'", file);
-        try (final FileInputStream fis = new FileInputStream(file);) {
+        try (final FileInputStream fis = new FileInputStream(file)) {
             return parse(fis);
         } catch (IOException e) {
             log.error("An exception during creating a creating a file stream.", e);

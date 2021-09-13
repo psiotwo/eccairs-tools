@@ -30,7 +30,7 @@ public class EccairsVersionComparator {
         for (EccairsEntity newE : newD.getEntities()) {
             Optional<EccairsEntity> origE = EccairsTaxonomyUtils
                 .entities(origD).stream().filter(ee -> ee.getId() == newE.getId()).findAny();
-            if (!origE.isPresent()) {
+            if (origE.isEmpty()) {
                 log.info("Entity {} is not present in {}.", newE.getId(), origD.getVersion());
                 continue;
             }
@@ -41,7 +41,7 @@ public class EccairsVersionComparator {
         for (EccairsAttribute newA : EccairsTaxonomyUtils.attributes(newD)) {
             Optional<EccairsAttribute> origA = EccairsTaxonomyUtils.attributes(origD).stream()
                 .filter(ee -> ee.getId() == newA.getId()).findAny();
-            if (!origA.isPresent()) {
+            if (origA.isEmpty()) {
                 log.info("Attribute {} ({}) is not present in {}.", newA.getId(),
                     newA.getDescription(),
                     origD.getVersion());
@@ -56,7 +56,7 @@ public class EccairsVersionComparator {
 
                 final List<EccairsValue> origValues = EccairsTaxonomyUtils.getValues(origA.get());
                 final List<Integer> origValueIds =
-                    origValues.stream().map(v -> v.getId()).collect(Collectors.toList());
+                    origValues.stream().map(EccairsValue::getId).collect(Collectors.toList());
 
                 final List<Integer> newNotOrigValues = new ArrayList<>(newValueIds);
                 newNotOrigValues.removeAll(origValueIds);
@@ -93,7 +93,7 @@ public class EccairsVersionComparator {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         String eccairsOriginalTaxonomyFile = args[0];
         String eccairsNewTaxonomyFile = args[1];
 

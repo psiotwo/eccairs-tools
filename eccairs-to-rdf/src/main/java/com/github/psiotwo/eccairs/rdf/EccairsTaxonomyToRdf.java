@@ -36,7 +36,7 @@ public class EccairsTaxonomyToRdf {
 
     private OntModel model;
     private final EccairsDictionary dictionary;
-    private String baseIri;
+    private final String baseIri;
 
     private String ontologyBaseIri;
     private String lang;
@@ -128,13 +128,12 @@ public class EccairsTaxonomyToRdf {
         model.add(rs.getModel());
     }
 
-    private Statement createSubValueLink(final Individual parent,
+    private void createSubValueLink(final Individual parent,
                                          final Individual child) {
         final Statement s = ResourceFactory
             .createStatement(parent, op(Vocabulary.s_p_has_child),
                 child);
         model.add(s);
-        return s;
     }
 
     private Individual transformEntity(final EccairsEntity entity) {

@@ -7,7 +7,7 @@ import org.w3c.dom.Document;
 
 public class NamespaceResolver implements NamespaceContext {
     //Store the source document to search the namespaces
-    private Document sourceDocument;
+    private final Document sourceDocument;
 
     public NamespaceResolver(Document document) {
         sourceDocument = document;
@@ -26,8 +26,7 @@ public class NamespaceResolver implements NamespaceContext {
         return sourceDocument.lookupPrefix(namespaceURI);
     }
 
-    @SuppressWarnings("rawtypes")
-    public Iterator getPrefixes(String namespaceURI) {
+    public Iterator<String> getPrefixes(String namespaceURI) {
         return null;
     }
 }

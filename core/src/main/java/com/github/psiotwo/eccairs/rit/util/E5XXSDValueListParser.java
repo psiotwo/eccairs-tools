@@ -49,6 +49,8 @@ public class E5XXSDValueListParser {
                     case "explanation":
                         explanation = nx.getTextContent();
                         break;
+                    default:
+                        throw new IllegalArgumentException("Unknown source " + source);
                 }
             }
             valueList.getValues().add(new Value()
@@ -63,7 +65,7 @@ public class E5XXSDValueListParser {
 
     public ValueList parse(String vlName, File file) {
         log.info("Processing file {}", file);
-        try (final FileInputStream fis = new FileInputStream(file);) {
+        try (final FileInputStream fis = new FileInputStream(file)) {
             // Setup classes to parse XSD file for complex types
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             final DocumentBuilder db = dbf.newDocumentBuilder();
