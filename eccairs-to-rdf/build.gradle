@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+    id "io.freefair.lombok" version "5.0.0-rc6"
+}
+
+group 'com.github.psiotwo'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':core')
+
+    implementation group: 'org.apache.jena', name: 'jena-core', version: '4.1.0'
+    implementation group: 'org.apache.jena', name: 'jena-arq', version: '4.1.0'
+
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}

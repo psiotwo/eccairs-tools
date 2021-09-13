@@ -49,6 +49,9 @@ public class EccairsAttribute implements EccairsTerm {
     @XmlAttribute(name = "DOMAINS")
     private String domains;
 
+    @XmlAttribute(name = "DEFAULT-UNIT")
+    private String defaultUnit;
+
     @XmlElementWrapper(name = "VALUES")
     @XmlElement(name = "VALUE")
     private List<EccairsValue> values;
