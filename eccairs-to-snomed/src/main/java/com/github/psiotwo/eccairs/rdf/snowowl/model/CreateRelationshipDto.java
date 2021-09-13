@@ -1,4 +1,4 @@
-package com.github.psiotwo.eccairs.snomed.snowowl.model;
+package com.github.psiotwo.eccairs.rdf.snowowl.model;
 
 import lombok.Getter;
 import lombok.Setter;

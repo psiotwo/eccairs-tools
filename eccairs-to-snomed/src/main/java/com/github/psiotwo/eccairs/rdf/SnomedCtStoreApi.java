@@ -1,4 +1,4 @@
-package com.github.psiotwo.eccairs.snomed;
+package com.github.psiotwo.eccairs.rdf;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import kong.unirest.UnirestException;

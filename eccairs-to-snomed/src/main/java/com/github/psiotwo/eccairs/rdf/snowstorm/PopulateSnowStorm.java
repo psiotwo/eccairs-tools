@@ -1,7 +1,7 @@
-package com.github.psiotwo.eccairs.snomed.snowstorm;
+package com.github.psiotwo.eccairs.rdf.snowstorm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.psiotwo.eccairs.snomed.PopulateSnomedServer;
+import com.github.psiotwo.eccairs.rdf.PopulateSnomedServer;
 
 /**
  * This script populates moves data from ECCAIRS distribution to SnowOwl and exports them

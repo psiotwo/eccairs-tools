@@ -1,4 +1,4 @@
-package com.github.psiotwo.eccairs.snomed;
+package com.github.psiotwo.eccairs.rdf;
 
 public class SnomedConstants {
     public static final long FSN = 900000000000003001l;

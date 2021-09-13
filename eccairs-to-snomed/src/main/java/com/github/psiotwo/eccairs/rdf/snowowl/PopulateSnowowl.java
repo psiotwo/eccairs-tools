@@ -1,7 +1,7 @@
-package com.github.psiotwo.eccairs.snomed.snowowl;
+package com.github.psiotwo.eccairs.rdf.snowowl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.psiotwo.eccairs.snomed.PopulateSnomedServer;
+import com.github.psiotwo.eccairs.rdf.PopulateSnomedServer;
 import kong.unirest.UnirestException;
 import lombok.extern.slf4j.Slf4j;
 

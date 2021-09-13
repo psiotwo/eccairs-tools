@@ -1,4 +1,4 @@
-package com.github.psiotwo.eccairs.snomed;
+package com.github.psiotwo.eccairs.rdf;
 
 import com.github.psiotwo.eccairs.core.EccairsTaxonomyParser;
 import com.github.psiotwo.eccairs.core.model.EccairsAttribute;

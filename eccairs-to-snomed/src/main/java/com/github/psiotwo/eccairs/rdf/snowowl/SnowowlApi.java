@@ -1,13 +1,13 @@
-package com.github.psiotwo.eccairs.snomed.snowowl;
+package com.github.psiotwo.eccairs.rdf.snowowl;
 
-import static com.github.psiotwo.eccairs.snomed.SnomedConstants.EN_UK;
-import static com.github.psiotwo.eccairs.snomed.SnomedConstants.EN_US;
-import static com.github.psiotwo.eccairs.snomed.SnomedConstants.PK_NAMESPACE;
+import static com.github.psiotwo.eccairs.rdf.SnomedConstants.EN_UK;
+import static com.github.psiotwo.eccairs.rdf.SnomedConstants.EN_US;
+import static com.github.psiotwo.eccairs.rdf.SnomedConstants.PK_NAMESPACE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.psiotwo.eccairs.snomed.SnomedCtStoreApi;
-import com.github.psiotwo.eccairs.snomed.snowowl.model.CreateRelationshipDto;
+import com.github.psiotwo.eccairs.rdf.SnomedCtStoreApi;
+import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateRelationshipDto;
 import java.util.HashMap;
 import java.util.Map;
 import kong.unirest.HttpResponse;

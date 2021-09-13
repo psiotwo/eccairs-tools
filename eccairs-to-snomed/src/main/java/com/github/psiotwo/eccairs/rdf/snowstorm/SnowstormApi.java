@@ -1,13 +1,13 @@
-package com.github.psiotwo.eccairs.snomed.snowstorm;
+package com.github.psiotwo.eccairs.rdf.snowstorm;
 
-import static com.github.psiotwo.eccairs.snomed.SnomedConstants.EN_UK;
-import static com.github.psiotwo.eccairs.snomed.SnomedConstants.EN_US;
-import static com.github.psiotwo.eccairs.snomed.snowowl.SnowowlDtoHelper.postConceptPayloadInModel;
-import static com.github.psiotwo.eccairs.snomed.snowowl.SnowowlDtoHelper.postDescriptionPayloadInModel;
-import static com.github.psiotwo.eccairs.snomed.snowowl.SnowowlDtoHelper.postRelationshipPayloadInModel;
+import static com.github.psiotwo.eccairs.rdf.SnomedConstants.EN_UK;
+import static com.github.psiotwo.eccairs.rdf.SnomedConstants.EN_US;
+import static com.github.psiotwo.eccairs.rdf.snowowl.SnowowlDtoHelper.postConceptPayloadInModel;
+import static com.github.psiotwo.eccairs.rdf.snowowl.SnowowlDtoHelper.postDescriptionPayloadInModel;
+import static com.github.psiotwo.eccairs.rdf.snowowl.SnowowlDtoHelper.postRelationshipPayloadInModel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.psiotwo.eccairs.snomed.SnomedCtStoreApi;
+import com.github.psiotwo.eccairs.rdf.SnomedCtStoreApi;
 import java.util.HashMap;
 import java.util.Map;
 import kong.unirest.HttpResponse;

@@ -1,27 +1,22 @@
-package com.github.psiotwo.eccairs.snomed.snowowl;
+package com.github.psiotwo.eccairs.rdf.snowowl;
 
-import static com.github.psiotwo.eccairs.snomed.SnomedConstants.ENTIRE_TERM_CASE_SENSITIVE;
-import static com.github.psiotwo.eccairs.snomed.SnomedConstants.EN_UK;
-import static com.github.psiotwo.eccairs.snomed.SnomedConstants.EN_US;
-import static com.github.psiotwo.eccairs.snomed.SnomedConstants.PK_NAMESPACE;
+import static com.github.psiotwo.eccairs.rdf.SnomedConstants.ENTIRE_TERM_CASE_SENSITIVE;
+import static com.github.psiotwo.eccairs.rdf.SnomedConstants.EN_UK;
+import static com.github.psiotwo.eccairs.rdf.SnomedConstants.EN_US;
+import static com.github.psiotwo.eccairs.rdf.SnomedConstants.PK_NAMESPACE;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.psiotwo.eccairs.snomed.SnomedConstants;
-import com.github.psiotwo.eccairs.snomed.SnomedCtStoreApi;
-import com.github.psiotwo.eccairs.snomed.snowowl.model.CreateConceptDescriptionDto;
-import com.github.psiotwo.eccairs.snomed.snowowl.model.CreateConceptDto;
-import com.github.psiotwo.eccairs.snomed.snowowl.model.CreateConceptRelationshipDto;
-import com.github.psiotwo.eccairs.snomed.snowowl.model.CreateDescriptionDto;
-import com.github.psiotwo.eccairs.snomed.snowowl.model.CreateRelationshipDto;
+import com.github.psiotwo.eccairs.rdf.SnomedConstants;
+import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateConceptDescriptionDto;
+import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateConceptDto;
+import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateConceptRelationshipDto;
+import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateDescriptionDto;
+import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateRelationshipDto;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
-import kong.unirest.json.JSONObject;
 
 public class SnowowlDtoHelper {
 
