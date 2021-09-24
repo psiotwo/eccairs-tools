@@ -1,0 +1,44 @@
+application:
+  version: ${version}
+
+management:
+  endpoints:
+    enabled-by-default: false
+  endpoint:
+    health:
+      enabled: true
+    info:
+      enabled: true
+
+info.app:
+  name: "ECCAIRS Service"
+  description: "This is the ECCAIRS Service to manage and serve taxonomies."
+  version: ${version}
+
+spring:
+  output:
+    ansi:
+      enabled: DETECT
+  servlet:
+    multipart:
+      max-request-size: '200000KB'
+      max-file-size: '200000KB'
+
+server:
+  port: 18080
+  servlet:
+    contextPath: /eccairs-service
+
+logging:
+  pattern:
+    console: "%d{dd-MM-yyyy HH:mm:ss.SSS} [%X{username}] [thread] %-5level %logger{36} - %msg %n%throwable"
+  level:
+    root: INFO
+
+eccairs:
+  # Base URI for creating new IRIs
+  baseUri: https://id.sio2.cz/
+  # SPARQL Query Protocol endpoint
+  sparqlQueryEndpoint: http://localhost:8080/rdf4j-server/repositories/eccairs2
+  # SPARQL Graph Store Protocol endpoint template. Appending a named graph yields a GSP endpoint
+  sparqlGspEndpointTemplate: http://localhost:8080/rdf4j-server/repositories/eccairs2/rdf-graphs/service?graph=

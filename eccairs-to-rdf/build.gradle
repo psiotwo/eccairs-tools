@@ -13,10 +13,10 @@ repositories {
 dependencies {
     implementation project(':core')
 
-    implementation group: 'org.apache.jena', name: 'jena-core', version: '4.1.0'
-    implementation group: 'org.apache.jena', name: 'jena-arq', version: '4.1.0'
+    implementation 'org.apache.jena:jena-core:4.1.0'
+    implementation 'org.apache.jena:jena-arq:4.1.0'
 
-    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+    implementation 'org.slf4j:slf4j-api:1.7.30'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'

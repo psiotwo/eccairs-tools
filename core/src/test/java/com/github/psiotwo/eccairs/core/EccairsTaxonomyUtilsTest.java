@@ -1,6 +1,6 @@
 package com.github.psiotwo.eccairs.core;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 import com.github.psiotwo.eccairs.core.model.EccairsAttribute;
@@ -24,7 +24,8 @@ class EccairsTaxonomyUtilsTest {
         values.add(new EccairsValue().setId(2));
         values.add(new EccairsValue().setId(12));
 
-        assertEquals(Arrays.asList("1 - D1", "5 - D5"), EccairsTaxonomyUtils.renderValues(values, Arrays.asList(1,5)));
+        assertEquals(Arrays.asList("1 - D1", "5 - D5"),
+            EccairsTaxonomyUtils.renderValues(values, Arrays.asList(1, 5)));
     }
 
     @Test
