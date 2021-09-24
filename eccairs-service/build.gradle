@@ -1,0 +1,69 @@
+buildscript {
+    repositories {
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "io.freefair.gradle:aspectj-plugin:3.8.4"
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.4.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id "io.freefair.aspectj.post-compile-weaving" version "5.3.3.3"
+    id "io.freefair.lombok" version "5.0.0-rc6"
+    id 'java'
+}
+
+group 'com.github.psiotwo'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+//compileJava {
+//    sourceCompatibility = '1.8'
+//    targetCompatibility = '1.8'
+//}
+
+dependencies {
+    implementation project(':core')
+    implementation project(':eccairs-to-rdf')
+
+    implementation 'org.slf4j:slf4j-api:1.7.30'
+
+    implementation 'org.apache.jena:jena-core:4.1.0'
+    implementation 'org.apache.jena:jena-arq:4.1.0'
+    implementation 'org.apache.jena:jena-rdfconnection:4.1.0'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.data:spring-data-commons'
+
+    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    implementation 'com.konghq:unirest-java:3.11.11'
+    implementation 'org.projectlombok:lombok:1.18.20'
+
+    annotationProcessor "org.projectlombok:lombok:1.18.20"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+bootJar {
+    archiveFileName = "sgov-server-${project.version}.jar"
+}
+
+bootRun {
+    systemProperties = System.properties
+}

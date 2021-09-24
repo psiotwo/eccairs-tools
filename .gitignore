@@ -1,4 +1,5 @@
-/.gradle
-/.idea
-/build
-/lombok.config
+**/.gradle
+**/.idea
+**/build
+**/lombok.config
+sandbox
