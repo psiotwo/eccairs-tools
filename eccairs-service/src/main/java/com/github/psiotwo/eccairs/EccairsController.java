@@ -56,16 +56,18 @@ public class EccairsController {
     /**
      * Checks whether ECCAIRS taxonomy is uploaded.
      *
-     * @param taxonomy taxonomy ID of the ECCAIRS taxonomy.
+     * @param taxonomyName name of the ECCAIRS taxonomy, e.g. 'aviation'.
+     * @param taxonomyVersion ID of the ECCAIRS taxonomy, e.g. '3.4.0.2'.
      */
-    @RequestMapping(method = HEAD, value = "/{taxonomy}")
+    @RequestMapping(method = HEAD, value = "/{taxonomyName}/{taxonomyVersion}")
     @ApiOperation(value = "Checks whether ECCAIRS taxonomy is uploaded.")
     public ResponseEntity<URI> isEccairsTaxonomyPresent(
-        @PathVariable("taxonomy") String taxonomy) {
+        @PathVariable("taxonomyName") String taxonomyName,
+        @PathVariable("taxonomyVersion") String taxonomyVersion ) {
         final boolean result = eccairsService
-            .eccairsTaxonomyExists(taxonomy);
-        final URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{taxonomy}")
-            .buildAndExpand(taxonomy).toUri();
+            .eccairsTaxonomyExists(taxonomyName, taxonomyVersion);
+        final URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{taxonomyName}/{taxonomyVersion}")
+            .buildAndExpand(taxonomyName,taxonomyVersion).toUri();
         return result ?
             ResponseEntity.ok(location) :
             ResponseEntity.notFound().build();

@@ -2,7 +2,7 @@ package com.github.psiotwo.eccairs;
 
 import com.github.psiotwo.eccairs.core.model.EccairsDictionary;
 import com.github.psiotwo.eccairs.rdf.EccairsTaxonomyToRdf;
-import java.util.Locale;
+import com.github.psiotwo.eccairs.rdf.EccairsUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.query.ParameterizedSparqlString;
@@ -21,15 +21,18 @@ public class JenaEccairsDao implements EccairsDao {
     private Conf conf;
 
     @Autowired
-    public JenaEccairsDao( final Conf conf ) {
+    public JenaEccairsDao(final Conf conf) {
         this.conf = conf;
     }
 
     public void saveEccairs(EccairsDictionary dictionary) {
         log.info("Saving: '{}, ver. {}'", dictionary.getTaxonomy(), dictionary.getVersion());
-        final String graphUrl = getGraphUrl(dictionary.getTaxonomy(), dictionary.getVersion());
+        final String graphUrl =
+            EccairsUtils.getOntologyUrl(conf.getBaseUri(), dictionary.getTaxonomy(),
+                dictionary.getVersion());
 
-        final EccairsTaxonomyToRdf exporter = new EccairsTaxonomyToRdf(graphUrl, dictionary);
+        final EccairsTaxonomyToRdf exporter =
+            new EccairsTaxonomyToRdf(conf.getBaseUri(), dictionary);
         final OntModel model = exporter.transform();
         log.info("- taxonomy file parsed.");
 
@@ -43,13 +46,9 @@ public class JenaEccairsDao implements EccairsDao {
         log.info("- taxonomy uploaded to graph {}", graphUrl);
     }
 
-    private String getGraphUrl(final String taxonomyName, final String taxonomyVersion) {
-        return conf.getBaseUri() + taxonomyName.toLowerCase(Locale.ROOT).replace(" ", "-")
-            + "-" + taxonomyVersion;
-    }
-
-    public boolean eccairsTaxonomyExists(final String taxonomyNameAndVersion) {
-        final String graphUrl = conf.getBaseUri() + taxonomyNameAndVersion;
+    public boolean eccairsTaxonomyExists(final String taxonomyName, final String taxonomyVersion) {
+        final String graphUrl =
+            EccairsUtils.getOntologyUrl(conf.getBaseUri(), taxonomyName, taxonomyVersion);
         try (RDFConnection conn = RDFConnectionFactory.connect(conf.getSparqlQueryEndpoint())) {
             final ParameterizedSparqlString query = new ParameterizedSparqlString();
             query.setCommandText("ASK { GRAPH ?g { ?s ?p ?o } }");

@@ -10,6 +10,7 @@ public class Vocabulary {
     public final static String s_p_has_detailed_description = NS + "has-detailed-description";
     public final static String s_p_has_description = NS + "has-description";
     public final static String s_c_attribute = NS + "attribute";
+    public final static String s_c_value_list = NS + "value-list";
     public final static String s_p_has_level = NS + "has-level";
     public final static String s_p_is_link = NS + "is-link";
     public final static String s_p_has_child = NS + "has-child";

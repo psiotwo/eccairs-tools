@@ -37,8 +37,8 @@ logging:
 
 eccairs:
   # Base URI for creating new IRIs
-  baseUri: https://id.sio2.cz/
+  baseUri: http://onto.fel.cvut.cz/ontologies/
   # SPARQL Query Protocol endpoint
-  sparqlQueryEndpoint: http://localhost:8080/rdf4j-server/repositories/eccairs2
+  sparqlQueryEndpoint: http://localhost:8080/rdf4j-server/repositories/eccairs-aviation-4.1.0.7
   # SPARQL Graph Store Protocol endpoint template. Appending a named graph yields a GSP endpoint
-  sparqlGspEndpointTemplate: http://localhost:8080/rdf4j-server/repositories/eccairs2/rdf-graphs/service?graph=
+  sparqlGspEndpointTemplate: http://localhost:8080/rdf4j-server/repositories/eccairs-aviation-4.1.0.7/rdf-graphs/service?graph=
