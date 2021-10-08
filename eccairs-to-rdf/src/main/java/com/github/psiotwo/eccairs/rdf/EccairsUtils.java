@@ -7,6 +7,7 @@ public class EccairsUtils {
     /**
      * Returns URL of the ontology, given baseUri, taxonomy name and taxonomy version.
      *
+     * @param baseUrl base URL of the ontology
      * @param taxonomyName name of the ontology.
      * @param taxonomyVersion version of the ontology.
      * @return URL of the ontology.
