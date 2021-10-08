@@ -29,12 +29,24 @@ public class EccairsControllerTest {
     private EccairsService service;
 
     @Test
-    void eccairsTaxonomyExistsCallsService_thenReturns200() throws Exception {
-        when(service.eccairsTaxonomyExists(any())).thenReturn(true);
+    void eccairsTaxonomyExistsForExistingTaxonomy_returns200() throws Exception {
+        when(service.eccairsTaxonomyExists("aviation", "3.4.0.2"))
+            .thenReturn(true);
         mockMvc.perform(
-            head("/taxonomy/{taxonomy}", "eccairs-aviation-3.4.0.2")
+            head("/taxonomy/{taxonomyName}/{taxonomyVersion}", "aviation", "3.4.0.2")
         ).andExpect(
             status().isOk()
+        );
+    }
+
+    @Test
+    void eccairsTaxonomyExistsForNonExisitngTaxonomy_returns404() throws Exception {
+        when(service.eccairsTaxonomyExists("aviation", "3.4.0.2"))
+            .thenReturn(true);
+        mockMvc.perform(
+            head("/taxonomy/{taxonomyName}/{taxonomyVersion}", "aviation", "3.4.0.1")
+        ).andExpect(
+            status().isNotFound()
         );
     }
 
@@ -48,7 +60,7 @@ public class EccairsControllerTest {
                 "some xml".getBytes(StandardCharsets.UTF_8));
         mockMvc.perform(
             MockMvcRequestBuilders
-                .multipart("/taxonomy", "eccairs-aviation-3.4.0.2")
+                .multipart("/taxonomy")
                 .file(file)
         ).andExpect(
             status().isCreated()

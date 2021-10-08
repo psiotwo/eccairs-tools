@@ -32,10 +32,11 @@ public class EccairsService {
     /**
      * Checks whether ECCAIRS taxonomy exists.
      *
-     * @param taxonomy identifier of the ECCAIRS taxonomy
+     * @param taxonomyName name of the ECCAIRS taxonomy
+     * @param taxonomyVersion version of the ECCAIRS taxonomy
      * @return true if the taxonomy exists, false otherwise
      */
-    public boolean eccairsTaxonomyExists(final String taxonomy) {
-        return dao.eccairsTaxonomyExists(taxonomy);
+    public boolean eccairsTaxonomyExists(final String taxonomyName, final String taxonomyVersion) {
+        return dao.eccairsTaxonomyExists(taxonomyName, taxonomyVersion);
     }
 }

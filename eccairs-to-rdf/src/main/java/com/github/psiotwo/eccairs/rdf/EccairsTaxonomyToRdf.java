@@ -37,18 +37,18 @@ public class EccairsTaxonomyToRdf {
     private OntModel model;
     private final EccairsDictionary dictionary;
 
-    private String ontologyIri;
+    private String base;
     private String lang;
 
     /**
      * Creates a new serializer of ECCAIRS to RDF.
      *
-     * @param ontologyIri IRI of the ontology
+     * @param base       base IRI of the ontology
      * @param dictionary RDF dictionary to transform
      */
-    public EccairsTaxonomyToRdf(final String ontologyIri, final EccairsDictionary dictionary) {
+    public EccairsTaxonomyToRdf(final String base, final EccairsDictionary dictionary) {
         this.dictionary = dictionary;
-        this.ontologyIri = ontologyIri;
+        this.base = base;
     }
 
     private String generateOntologyPrefix(final EccairsDictionary dictionary) {
@@ -67,18 +67,18 @@ public class EccairsTaxonomyToRdf {
 
         transformDictionary();
 
+        model.setNsPrefix("e-" + dictionary.getTaxonomy().toLowerCase().replace("ECCAIRS ","").charAt(0) + "-" + dictionary.getVersion(),
+            getOntologyIriBase());
         dictionary.getEntities().forEach(this::transformEntity);
 
         return model;
     }
 
     private void transformDictionary() {
-
         this.lang = getLang(dictionary.getLanguage());
-
         final String prefix = generateOntologyPrefix(dictionary);
-        model.setNsPrefix(prefix, ontologyIri + "/");
-        final Ontology o = model.createOntology(ontologyIri);
+        model.setNsPrefix(prefix, getOntologyIriBase());
+        final Ontology o = model.createOntology(getOntologyIri());
         o.addProperty(model.createAnnotationProperty(Vocabulary.s_p_has_key), dictionary.getKey());
     }
 
@@ -105,7 +105,7 @@ public class EccairsTaxonomyToRdf {
                 child);
         model.add(s);
         final ReifiedStatement rs = s.createReifiedStatement(
-            getOntologyBaseIri() + "r-" +
+            getOntologyIriBase() + "r-" +
                 parent.getURI().substring(parent.getURI().lastIndexOf("-") - 1)
                 + "-" + child.getURI()
                 .substring(child.getURI().lastIndexOf("-") - 1));
@@ -120,7 +120,7 @@ public class EccairsTaxonomyToRdf {
     }
 
     private void createSubValueLink(final Individual parent,
-                                         final Individual child) {
+                                    final Individual child) {
         final Statement s = ResourceFactory
             .createStatement(parent, op(Vocabulary.s_p_has_child),
                 child);
@@ -130,7 +130,7 @@ public class EccairsTaxonomyToRdf {
     private Individual transformEntity(final EccairsEntity entity) {
         final OntClass cEntity = model.createClass(Vocabulary.s_c_entity);
         final Individual rEntity =
-            model.createIndividual(getOntologyBaseIri() + "e-" + entity.getId(), cEntity);
+            model.createIndividual(getOntologyIriBase() + "e-" + entity.getId(), cEntity);
         addProperties(rEntity, entity);
         Optional.ofNullable(entity.getEntities()).orElse(Collections.emptySet())
             .forEach(subEntity -> {
@@ -150,32 +150,36 @@ public class EccairsTaxonomyToRdf {
     private Individual transformAttribute(final EccairsAttribute attribute) {
         final OntClass cAttribute = model.createClass(Vocabulary.s_c_attribute);
         final Individual rAttribute =
-            model.createIndividual(getOntologyBaseIri() + "a-" + attribute.getId(), cAttribute);
+            model.createIndividual(getOntologyIriBase() + "a-" + attribute.getId(), cAttribute);
         addProperties(rAttribute, attribute);
-        Optional.ofNullable(attribute.getValues()).orElse(Collections.emptyList())
-            .forEach(value -> {
-                final Individual rValue = transformValue(rAttribute, value);
-                createSubValueLink(rAttribute, rValue);
-            });
+        if (!Optional.ofNullable(attribute.getValues()).orElse(Collections.emptyList()).isEmpty()) {
+            final OntClass cValueList = model.createClass(Vocabulary.s_c_value_list);
+            final String valueListId = "vl-a-" + attribute.getId();
+            final String valueListUri = getOntologyIriBase() + valueListId;
+            final Individual rValueList =
+                model.createIndividual(valueListUri, cValueList);
+            createSubValueLink(rAttribute, rValueList);
+            model.setNsPrefix("e-" + valueListId, valueListUri + "/");
+            Optional.ofNullable(attribute.getValues()).orElse(Collections.emptyList())
+                .forEach(value -> {
+                    final Individual rValue = transformValue(rValueList, value);
+                    createSubValueLink(rValueList, rValue);
+                });
+        }
         return rAttribute;
     }
 
-    private Individual transformValue(final Individual rAttribute, final EccairsValue value) {
+    private Individual transformValue(final Individual rValueList, final EccairsValue value) {
         final OntClass cValue = model.createClass(Vocabulary.s_c_value);
-        final String valueListIdx = getValueListId(rAttribute);
         final Individual rValue =
-            model.createIndividual(getOntologyBaseIri() + valueListIdx + "-v-" + value.getId(),
+            model.createIndividual(rValueList.getURI() + "/v-" + value.getId(),
                 cValue);
         addProperties(rValue, value);
         Optional.ofNullable(value.getValues()).orElse(Collections.emptyList()).forEach(child -> {
-            final Individual rChild = transformValue(rAttribute, child);
+            final Individual rChild = transformValue(rValueList, child);
             createSubValueLink(rValue, rChild);
         });
         return rValue;
-    }
-
-    private String getValueListId(Resource rAttribute) {
-        return "vl-a-" + rAttribute.getProperty(dp(Vocabulary.s_p_has_id)).getString();
     }
 
     private static String getLang(String language) {
@@ -221,8 +225,16 @@ public class EccairsTaxonomyToRdf {
             ResourceFactory.createLangLiteral(term.getExplanation(), lang));
     }
 
-    public String getOntologyBaseIri() {
-        return ontologyIri + "/";
+    private String getOntologyIriBase() {
+        return getOntologyIri() + "/";
+    }
+
+    private String getOntologyIri() {
+        return EccairsUtils.getOntologyUrl(
+            this.base,
+            dictionary.getTaxonomy(),
+            dictionary.getVersion()
+        );
     }
 
     public static void main(String[] args) throws IOException {

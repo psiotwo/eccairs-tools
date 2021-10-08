@@ -36,9 +36,9 @@ public class EccairsServiceTest {
 
     @Test
     public void eccairsTaxonomyExistsUsesDaoCorrectly() {
-        when(dao.eccairsTaxonomyExists(anyString())).thenReturn(true);
-        final boolean exists = sut.eccairsTaxonomyExists("eccairs-aviation-3.4.0.2");
+        when(dao.eccairsTaxonomyExists(anyString(), anyString())).thenReturn(true);
+        final boolean exists = sut.eccairsTaxonomyExists("aviation", "3.4.0.2");
         Assertions.assertTrue(exists);
-        verify(dao, times(1)).eccairsTaxonomyExists("eccairs-aviation-3.4.0.2");
+        verify(dao, times(1)).eccairsTaxonomyExists("aviation", "3.4.0.2");
     }
 }

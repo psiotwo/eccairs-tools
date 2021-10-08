@@ -14,8 +14,9 @@ public interface EccairsDao {
     /**
      * Checks whether the taxonomy with the given name and version exists.
      *
-     * @param taxonomyNameAndVersion name and version of the ECCAIRS taxonomy, e.g. eccairs-aviation-3.4.0.2
+     * @param taxonomyName name of the ECCAIRS taxonomy, e.g. aviation
+     * @param taxonomyVersion version of the ECCAIRS taxonomy, e.g. 3.4.0.2
      * @return true if the taxonomy is present in the repository
      */
-    boolean eccairsTaxonomyExists(final String taxonomyNameAndVersion);
+    boolean eccairsTaxonomyExists(final String taxonomyName, final String taxonomyVersion);
 }
