@@ -1,17 +1,8 @@
 plugins {
-    id 'java'
     id 'application'
-    id "io.freefair.lombok" version "5.0.0-rc6"
 }
-
-group 'com.github.psiotwo'
-version '1.0-SNAPSHOT'
 
 mainClassName = 'com.github.psiotwo.eccairs.snomed.snowowl.PopulateSnowowl'
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     implementation project(':core')
@@ -20,13 +11,7 @@ dependencies {
     implementation group: 'com.konghq', name: 'unirest-java', version: '3.7.02'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.7.4'
 
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+    implementation 'org.slf4j:slf4j-simple:1.7.32'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
-}
-
-test {
-    useJUnitPlatform()
+    testImplementation("org.junit.jupiter:junit-jupiter")
 }
