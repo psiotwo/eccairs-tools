@@ -3,8 +3,10 @@ package com.github.psiotwo.eccairs;
 import com.github.psiotwo.eccairs.core.model.EccairsDictionary;
 import com.github.psiotwo.eccairs.rdf.EccairsTaxonomyToRdf;
 import com.github.psiotwo.eccairs.rdf.EccairsUtils;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.jena.ontology.OntModel;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.rdfconnection.RDFConnection;
@@ -27,28 +29,31 @@ public class JenaEccairsDao implements EccairsDao {
 
     public void saveEccairs(EccairsDictionary dictionary) {
         log.info("Saving: '{}, ver. {}'", dictionary.getTaxonomy(), dictionary.getVersion());
-        final String graphUrl =
-            EccairsUtils.getOntologyUrl(conf.getBaseUri(), dictionary.getTaxonomy(),
-                dictionary.getVersion());
 
         final EccairsTaxonomyToRdf exporter =
             new EccairsTaxonomyToRdf(conf.getBaseUri(), dictionary);
-        final OntModel model = exporter.transform();
+        final Dataset dataset = exporter.transform();
         log.info("- taxonomy file parsed.");
 
-        final RDFConnectionRemoteBuilder builder = RDFConnectionRemote.create()
-            .destination(conf.getSparqlQueryEndpoint())
-            .gspEndpoint(conf.getSparqlGspEndpointTemplate() + graphUrl);
+        dataset.listNames().forEachRemaining(n -> {
+            final RDFConnectionRemoteBuilder builder = RDFConnectionRemote.create()
+                .destination(conf.getSparqlQueryEndpoint())
+                .gspEndpoint(conf.getSparqlGspEndpointTemplate() + n);
+            try (RDFConnection conn = builder.build()) {
+                log.info(" Saving {}", n);
+                conn.put(dataset.getNamedModel(n));
+            }
+        });
 
-        try (RDFConnection conn = builder.build()) {
-            conn.put(model);
-        }
-        log.info("- taxonomy uploaded to graph {}", graphUrl);
+        final List<String> namedGraphs = new ArrayList<>();
+        dataset.listNames().forEachRemaining(namedGraphs::add);
+
+        log.info("- taxonomy uploaded to graphs {}", namedGraphs);
     }
 
     public boolean eccairsTaxonomyExists(final String taxonomyName, final String taxonomyVersion) {
         final String graphUrl =
-            EccairsUtils.getOntologyUrl(conf.getBaseUri(), taxonomyName, taxonomyVersion);
+            EccairsUtils.getVersionedOntologyUrl(conf.getBaseUri(), taxonomyName, taxonomyVersion);
         try (RDFConnection conn = RDFConnectionFactory.connect(conf.getSparqlQueryEndpoint())) {
             final ParameterizedSparqlString query = new ParameterizedSparqlString();
             query.setCommandText("ASK { GRAPH ?g { ?s ?p ?o } }");

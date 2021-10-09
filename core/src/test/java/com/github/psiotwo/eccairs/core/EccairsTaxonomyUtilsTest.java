@@ -4,15 +4,37 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 import com.github.psiotwo.eccairs.core.model.EccairsAttribute;
+import com.github.psiotwo.eccairs.core.model.EccairsDictionary;
+import com.github.psiotwo.eccairs.core.model.EccairsEntity;
 import com.github.psiotwo.eccairs.core.model.EccairsValue;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 
 class EccairsTaxonomyUtilsTest {
+
+    @Test
+    void attributesListsAllAttributesRecursively() {
+        final EccairsDictionary dictionary = new EccairsDictionary();
+        final EccairsEntity entity1 = new EccairsEntity();
+        final Set<EccairsAttribute> attributes1 = new HashSet<>();
+        attributes1.add(new EccairsAttribute().setId(1));
+        attributes1.add(new EccairsAttribute().setId(2));
+        entity1.setAttributes(attributes1);
+        final EccairsEntity entity2 = new EccairsEntity();
+        entity1.setEntities(Collections.singleton(entity2));
+        final Set<EccairsAttribute> attributes2 = new HashSet<>();
+        attributes2.add(new EccairsAttribute().setId(3));
+        entity2.setAttributes(attributes2);
+        dictionary.setEntities(Collections.singletonList(entity1));
+
+        assertEquals(3, EccairsTaxonomyUtils.attributes(dictionary).size());
+    }
 
     @Test
     void testRenderValuesCorrectlyRendersValuesForIds() {

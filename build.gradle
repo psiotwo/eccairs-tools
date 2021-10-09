@@ -1,0 +1,44 @@
+plugins {
+    id 'io.freefair.lombok' version '6.2.0' apply false
+    id 'ru.vyarus.quality' version '4.6.0' apply false
+}
+
+allprojects {
+    group 'com.github.psiotwo'
+    version '1.0-SNAPSHOT'
+}
+
+subprojects {
+
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+    apply plugin: 'io.freefair.lombok'
+    apply plugin: 'ru.vyarus.quality'
+
+    quality {
+        strict = false
+    }
+
+    compileJava {
+        sourceCompatibility = '11'
+        targetCompatibility = '11'
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation 'org.slf4j:slf4j-api:1.7.30'
+        testImplementation(enforcedPlatform("org.junit:junit-bom:5.4.0"))
+    }
+
+    test {
+        useJUnitPlatform()
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        dependsOn test // tests are required to run before generating the report
+    }
+}
