@@ -237,7 +237,7 @@ public class EccairsTaxonomyToRdf {
         );
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(final String[] args) throws IOException {
         final EccairsTaxonomyParser p = new EccairsTaxonomyParser();
         final EccairsDictionary d = p.parse(new File(args[0]));
         final EccairsTaxonomyToRdf r = new EccairsTaxonomyToRdf("http://test.org/", d);
