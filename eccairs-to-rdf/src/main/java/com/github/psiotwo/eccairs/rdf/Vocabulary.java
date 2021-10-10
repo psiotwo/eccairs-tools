@@ -13,6 +13,7 @@ public class Vocabulary {
     public final static String s_c_value_list = NS + "value-list";
     public final static String s_p_has_level = NS + "has-level";
     public final static String s_p_is_link = NS + "is-link";
+    public final static String s_p_is_version_of = NS +"is-version-of";
     public final static String s_p_has_child = NS + "has-child";
     public final static String s_p_has_id = NS + "has-id";
     public final static String s_p_has_default_unit = NS + "has-default-unit";
