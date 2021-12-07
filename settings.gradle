@@ -3,5 +3,3 @@ include 'core'
 include 'eccairs-service'
 include 'eccairs-to-rdf'
 include 'eccairs-to-snomed'
-include 'eccairs-to-rf2'
-
