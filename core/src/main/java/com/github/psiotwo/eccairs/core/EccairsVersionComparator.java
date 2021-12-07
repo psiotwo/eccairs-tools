@@ -6,7 +6,6 @@ import com.github.psiotwo.eccairs.core.model.EccairsEntity;
 import com.github.psiotwo.eccairs.core.model.EccairsTerm;
 import com.github.psiotwo.eccairs.core.model.EccairsValue;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

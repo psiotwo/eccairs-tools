@@ -3,7 +3,6 @@ package com.github.psiotwo.eccairs.rit;
 import com.github.psiotwo.eccairs.rit.model.RitAttribute;
 import com.github.psiotwo.eccairs.rit.model.RitEntity;
 import com.github.psiotwo.eccairs.rit.model.RitModel;
-import java.io.IOException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
