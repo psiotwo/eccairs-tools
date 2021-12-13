@@ -9,45 +9,87 @@ import static com.github.psiotwo.eccairs.rdf.SnomedConstants.PK_NAMESPACE;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.psiotwo.eccairs.rdf.SnomedConstants;
+import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateClassAxiomDto;
 import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateConceptDescriptionDto;
 import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateConceptDto;
 import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateConceptRelationshipDto;
-import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateDescriptionDto;
-import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateRelationshipDto;
-import java.util.Arrays;
+import com.github.psiotwo.eccairs.rdf.snowowl.model.CreateRefsetMemberDto;
+import com.github.psiotwo.eccairs.rdf.snowowl.model.PreferredTerm;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SnowowlDtoHelper {
 
-    private static final Map<String,String> acceptabilityMap = new HashMap<>();
+    private static final Map<String, String> prefAcceptabilityMap = new HashMap<>();
 
-    public SnowowlDtoHelper(String serverUrl) {
-        acceptabilityMap.put(EN_US + "", "PREFERRED");
-        acceptabilityMap.put(EN_UK + "", "PREFERRED");
+    static {
+        prefAcceptabilityMap.put(EN_US + "", "PREFERRED");
+        prefAcceptabilityMap.put(EN_UK + "", "PREFERRED");
     }
 
-    public static String postConceptPayloadInModel(final String conceptPL, final long parentId,
-                                            final long moduleId, String semanticTag,
-                                            final Long id)
+    public static String postRefsetMemberPayload(final Long member, final Long refsetId, final Long moduleId)
         throws JsonProcessingException {
+        final CreateRefsetMemberDto dto = new CreateRefsetMemberDto()
+            .setActive(true)
+            .setRefsetId(refsetId)
+            .setReferencedComponentId(member)
+            .setModuleId(moduleId);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(dto);
+    }
+
+
+    public static String postConceptPayloadInModel(final Map<Long, Set<String>> descriptions,
+                                                   final Map<Long, Set<Long>> relationships,
+                                                   final String preferredTerm,
+                                                   final long moduleId, String semanticTag,
+                                                   final Long id)
+        throws JsonProcessingException {
+        if (descriptions.get(SnomedConstants.FSN).isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        final List<CreateConceptDescriptionDto> descriptionPayload = new ArrayList<>();
+
+        descriptionPayload.add(
+            createConceptDescriptionDtoInModel(preferredTerm, SnomedConstants.SYNONYM, true));
+
+        descriptions.forEach((k, v) -> {
+            v.forEach(vv -> {
+                descriptionPayload.add(createConceptDescriptionDtoInModel(vv, k, false));
+            });
+        });
+
+        final List<CreateConceptRelationshipDto> relationshipPayload = new ArrayList<>();
+        relationships.forEach((k, v) -> {
+            v.forEach(vv -> {
+                relationshipPayload.add(createConceptRelationshipDtoInModel(vv, k));
+            });
+        });
+
+        final List<CreateClassAxiomDto> ccaDto = Collections.singletonList(
+            new CreateClassAxiomDto().setRelationships(relationshipPayload));
+
         final CreateConceptDto createConceptDto = new CreateConceptDto()
             .setActive(true)
             .setModuleId(moduleId)
-            .setCommitComment("Creating concept " + conceptPL)
+            .setCommitComment("Creating concept " + descriptions)
             .setDefaultModuleId(moduleId)
             .setNamespaceId(PK_NAMESPACE + "")
-            .setDescriptions(Arrays.asList(
-                createConceptDescriptionDtoInModel(conceptPL, SnomedConstants.FSN),
-                createConceptDescriptionDtoInModel(conceptPL + " (" + semanticTag + ")",
-                    SnomedConstants.SYNONYM)
-            ))
-            .setRelationships(Arrays.asList(
-                createConceptRelationshipDtoInModel(parentId, SnomedConstants.IS_A)
-            ));
+            .setDescriptions(descriptionPayload)
+            .setClassAxioms(ccaDto)
+            .setPt(new PreferredTerm()
+                .setLang("en")
+                .setTerm(preferredTerm)
+            );
 
         if (id != null) {
-            createConceptDto.setId(id);
+            createConceptDto.setConceptId(id);
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -55,47 +97,16 @@ public class SnowowlDtoHelper {
         return s;
     }
 
-
-    public static String postDescriptionPayloadInModel(final long conceptId,
-                                                final String conceptPL,
-                                                final long typeId,
-                                                final long moduleId)
-        throws JsonProcessingException {
-        final CreateDescriptionDto createConceptDto
-            = createDescriptionDtoInModel(conceptId, conceptPL, typeId, moduleId);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String s = objectMapper.writeValueAsString(createConceptDto);
-        return s;
-    }
-
-    private static CreateDescriptionDto createDescriptionDtoInModel(final long conceptId,
-                                                             final String term,
-                                                             final long typeId,
-                                                             final long moduleId) {
-        return new CreateDescriptionDto()
-            .setActive(true)
-            .setLanguageCode("en")
-            .setModuleId(moduleId)
-            .setConceptId(conceptId)
-            .setCommitComment("Creating description " + term + " for " + conceptId)
-            .setDefaultModuleId(moduleId)
-            .setNamespaceId(PK_NAMESPACE + "")
-            .setCaseSignificanceId(ENTIRE_TERM_CASE_SENSITIVE + "")
-            .setTerm(term)
-            .setAcceptability(acceptabilityMap)
-            .setTypeId(typeId);
-    }
-
     private static CreateConceptDescriptionDto createConceptDescriptionDtoInModel(
         final String preferredLabel,
-        final long typeId) {
+        final long typeId,
+        final boolean preferred) {
         return new CreateConceptDescriptionDto()
             .setActive(true)
             .setLanguageCode("en")
             .setCaseSignificanceId(ENTIRE_TERM_CASE_SENSITIVE + "")
             .setTerm(preferredLabel)
-            .setAcceptability(acceptabilityMap)
+            .setAcceptabilityMap(preferred ? prefAcceptabilityMap : Collections.emptyMap())
             .setTypeId(typeId);
     }
 
@@ -108,22 +119,16 @@ public class SnowowlDtoHelper {
             .setTypeId(typeId);
     }
 
-    public static String postRelationshipPayloadInModel(final long source, final long target,
-                                                 final long attribute,
-                                                 final long moduleId)
-        throws JsonProcessingException {
-        final CreateRelationshipDto createConceptDto = new CreateRelationshipDto()
-            .setActive(true)
-            .setModuleId(moduleId)
-            .setCommitComment("Creating relationship " + attribute)
-            .setDefaultModuleId(moduleId)
-            .setNamespaceId(PK_NAMESPACE + "")
-            .setSourceId(source)
-            .setTypeId(attribute)
-            .setDestinationId(target);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String s = objectMapper.writeValueAsString(createConceptDto);
-        return s;
-    }
+//    private static CreateClassAxiomDto createConceptClassAxiomsDtoInModel(
+//        final long destinationId,
+//        final long typeId
+//    ) {
+//        return new CreateClassAxiomDto()
+//            .setRelationships(Collections.singletonList(
+//                new CreateConceptRelationshipDto()
+//                    .setActive(true)
+//                    .setDestinationId(destinationId)
+//                    .setTypeId(typeId)
+//            ));
+//    }
 }

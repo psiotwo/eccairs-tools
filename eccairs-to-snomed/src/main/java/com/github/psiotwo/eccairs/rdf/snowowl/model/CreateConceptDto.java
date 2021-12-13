@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 public class CreateConceptDto {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long id;
+    private Long conceptId;
 
     private boolean active;
 
@@ -24,7 +24,9 @@ public class CreateConceptDto {
 
     private String namespaceId;
 
+    private PreferredTerm pt;
+
     private List<CreateConceptDescriptionDto> descriptions;
 
-    private List<CreateConceptRelationshipDto> relationships;
+    private List<CreateClassAxiomDto> classAxioms;
 }

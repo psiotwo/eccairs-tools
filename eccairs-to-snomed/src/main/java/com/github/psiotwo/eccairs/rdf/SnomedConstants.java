@@ -12,8 +12,8 @@ public class SnomedConstants {
     public static final long EN_US = 900000000000509007l;
     public static final long EN_UK = 900000000000508004l;
     public static final long ENTIRE_TERM_CASE_SENSITIVE = 900000000000017005l;
-
-
+    public static final long MODULE = 900000000000443000l;
+    public static final long SIMPLE_TYPE_REFERENCE_SET = 446609009l;
 
     private SnomedConstants() {
     }

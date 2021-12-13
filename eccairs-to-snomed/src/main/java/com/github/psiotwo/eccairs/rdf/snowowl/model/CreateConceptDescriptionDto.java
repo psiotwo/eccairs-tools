@@ -10,7 +10,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class CreateConceptDescriptionDto {
 
-    private Map<String, String> acceptability;
+    private Map<String, String> acceptabilityMap;
 
     private boolean active;
 

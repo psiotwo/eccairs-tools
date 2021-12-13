@@ -1,39 +1,46 @@
 package com.github.psiotwo.eccairs.rdf;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.psiotwo.eccairs.core.EccairsTaxonomyParser;
+import com.github.psiotwo.eccairs.core.EccairsTaxonomyUtils;
 import com.github.psiotwo.eccairs.core.model.EccairsAttribute;
 import com.github.psiotwo.eccairs.core.model.EccairsDictionary;
 import com.github.psiotwo.eccairs.core.model.EccairsEntity;
 import com.github.psiotwo.eccairs.core.model.EccairsTerm;
 import com.github.psiotwo.eccairs.core.model.EccairsValue;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import kong.unirest.UnirestException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * entity -> SNOMED concept (subClass of ECCAIRS concept)
- *    => min-instance, max-instance [0..1,0..unlimited] => hasReportPart someValuesFrom
- *       attribute -> SNOMED concept attribute (subClassOf ECCAIRS concept attribute, SNOMED
- *       concept attribute)
- *    => min-instance, max-instance [0..1,0..unlimited] => <attribute> someValuesFrom
- *    => valueType TODO
- *    => dataType TODO
- *    => defaultUnit TODO
- *    => xsd-tag TODO
- *    => domains TODO
- *    => size TODO
- *    => specialAttribute TODO
+ * => min-instance, max-instance [0..1,0..unlimited] => hasReportPart someValuesFrom
+ * attribute -> SNOMED concept attribute (subClassOf ECCAIRS concept attribute, SNOMED
+ * concept attribute)
+ * => min-instance, max-instance [0..1,0..unlimited] => <attribute> someValuesFrom
+ * => valueType TODO
+ * => dataType TODO
+ * => defaultUnit TODO
+ * => xsd-tag TODO
+ * => domains TODO
+ * => size TODO
+ * => specialAttribute TODO
  * value -> SNOMED concept
- *    => level TODO
- *    => domains TODO
- *
+ * => level TODO
+ * => domains TODO
+ * <p>
  * ***
- *    detailed-description -> synonym, preferred in US
- *    description -> synonym
- *    explanation -> definition
+ * detailed-description -> synonym, preferred in US
+ * description -> synonym
+ * explanation -> definition
  */
 @Slf4j
 public class PopulateSnomedServer {
@@ -43,25 +50,38 @@ public class PopulateSnomedServer {
 
     private final SnomedCtStoreApi api;
 
-    private final long entityConceptId = 121000250102L;
-    private final long objectAttributeConceptId = 131000250100L;
-    private final long dataAttributeConceptId = 151000250107L;
-    private final long valueConceptId = 141000250109L;
-    private final long hasSubEntity = 1121000250103L;
-    private final long hasId = 1931000250104L;
+    /**
+     * White list takes precedence.
+     */
+    private final List<Integer> whiteListEntities =
+        Arrays.asList(1, 3, 4, 12, 14, 15, 24);
+    private final List<Integer> whiteListAttribute =
+        Arrays.asList(430, 390, 391, 385, 386, 392, 393, 394);
+    private final List<Integer> blackListAttributes = Arrays.asList(5, 16, 21, 167, 215, 228);
 
+    /**
+     * Only generate first level of values - a sample.
+     */
+    private boolean sample = false;
+
+    private final String branch;
     private long entityCount = 0;
     private long attributeCount = 0;
     private long valueCount = 0;
 
-    private final List<Integer> filteredValueLists = Arrays.asList(5, 16, 21, 167, 215, 228);
+    /**
+     * ECCAIRS id to SCTID
+     */
+    private final Map<Integer, Long> eIdMap = new HashMap<>();
+    private final Map<Integer, Long> aIdMap = new HashMap<>();
 
-    private final String branch;
+    private List<EccairsEntity> entities;
+    private List<EccairsAttribute> attributes;
 
     public PopulateSnomedServer(final SnomedCtStoreApi api,
                                 final String newBranch,
                                 final String taxonomyFile
-                           )
+    )
         throws JsonProcessingException, UnirestException {
         this.branch = "MAIN/" + newBranch;
         this.api = api;
@@ -70,7 +90,13 @@ public class PopulateSnomedServer {
 
         initModel();
 
+        entities = EccairsTaxonomyUtils.entities(d);
+        attributes = EccairsTaxonomyUtils.attributes(d);
+
         for (final EccairsEntity e : d.getEntities()) {
+            if (!whiteListEntities.contains(e.getId())) {
+                continue;
+            }
             storeEntity(e);
         }
         api.finish();
@@ -79,121 +105,216 @@ public class PopulateSnomedServer {
     private void initModel() throws UnirestException {
         try {
             api.createConcept("ECCAIRS entity", SnomedConstants.CONCEPT, branch, moduleId, "entity",
-                entityConceptId);
-            api.createConcept("ECCAIRS PredefinedValueList Attribute",
-                SnomedConstants.CONCEPT_MODEL_OBJECT_ATTRIBUTE,
-                branch, moduleId, "attribute", objectAttributeConceptId);
-            api.createConcept("ECCAIRS ManualEntry Attribute",
-                SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE, branch,
-                moduleId, "attribute", dataAttributeConceptId);
+                SnomedEccairsConstants.ENTITY);
             api.createConcept("ECCAIRS value", SnomedConstants.CONCEPT, branch, moduleId, "value",
-                valueConceptId);
+                SnomedEccairsConstants.VALUE);
             api.createConcept("has report part", SnomedConstants.CONCEPT_MODEL_OBJECT_ATTRIBUTE,
                 branch,
                 moduleId,
-                "concept attribute",
-                hasSubEntity);
+                "attribute",
+                SnomedEccairsConstants.HAS_SUB_ENTITY);
             api.createConcept("has eccairs id", SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE,
                 branch,
                 moduleId,
-                "concept attribute", hasId);
+                "attribute", SnomedEccairsConstants.HAS_ID);
+            api.createConcept("ECCAIRS module", SnomedConstants.MODULE,
+                branch,
+                moduleId,
+                "core metadata concept", moduleId);
 //        this.valueListConceptId = api.createConcept("ECCAIRS valuelist", "138875005", branch,
 //        moduleId, "eccairs valuelist");
 //        this.hasId = api.createConcept("has ECCAIRS id", CONCEPT_ATTRIBUTE, branch, moduleId,
 //        "attribute");
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error("Skipping errors during ", e);
         }
     }
 
-    private long addConcept(EccairsTerm e, long parentId, String semanticTag)
-        throws JsonProcessingException, UnirestException {
-        long conceptId =
-            api.createConcept(e.getDetailedDescription(), parentId, branch, moduleId, semanticTag);
+    private Map<Long, Set<String>> createDescriptions(final EccairsTerm e, final String semanticTag)
+        throws UnirestException {
+        final Map<Long, Set<String>> descriptions = new HashMap<>();
+        descriptions.put(SnomedConstants.FSN, Collections.singleton(e.getDetailedDescription()));
+        final Set<String> synonyms = new HashSet<>();
         if (!e.getDescription().trim().isEmpty()) {
-            api.addDescription(conceptId, SnomedConstants.SYNONYM, e.getDescription(), branch,
-                moduleId);
+            synonyms.add(e.getDescription());
         }
         if (!e.getExplanation().trim().isEmpty()) {
-            api.addDescription(conceptId, SnomedConstants.DEFINITION, e.getExplanation(), branch,
-                moduleId);
+            descriptions.put(SnomedConstants.DEFINITION, Collections.singleton(e.getExplanation()));
         }
         if (e.getId() != 0) {
-            api.addDescription(conceptId, SnomedConstants.SYNONYM, e.getId() + "", branch,
-                moduleId); // TODO
+            synonyms.add(e.getId() + "");
         }
-        return conceptId;
+
+        descriptions.put(SnomedConstants.SYNONYM, synonyms);
+
+        return descriptions;
     }
 
     private long storeEntity(final EccairsEntity e)
         throws JsonProcessingException, UnirestException {
-        long conceptId = addConcept(e, entityConceptId, "Entity");
-        log.info("Počet entit: {}", ++entityCount);
+
+        log.info("[" + ++entityCount + "] Entity (" + e.getId() + ")" + e.getDescription());
+        final Map<Long, Set<String>> descriptions = createDescriptions(e, "Entity");
+        final Map<Long, Set<Long>> relationships = new HashMap<>();
+        relationships.put(SnomedEccairsConstants.HAS_SUB_ENTITY, new HashSet<>());
+        relationships.put(SnomedConstants.IS_A, Collections.singleton(
+            SnomedEccairsConstants.ENTITY));
 
         if (e.getEntities() != null) {
             for (final EccairsEntity ee : e.getEntities()) {
+                if (!whiteListEntities.contains(ee.getId())) {
+                    continue;
+                }
                 long childConceptId = storeEntity(ee);
-                api.addRelationship(conceptId, childConceptId, hasSubEntity, branch, moduleId);
+                relationships.get(SnomedEccairsConstants.HAS_SUB_ENTITY).add(childConceptId);
             }
         }
         if (e.getAttributes() != null) {
             for (final EccairsAttribute a : e.getAttributes()) {
-                storeAttribute(conceptId, a);
-            }
-        }
-        log.info("Počet prvků modelu: {} ", (entityCount + attributeCount + valueCount));
 
-        return conceptId;
-    }
+                if (whiteListAttribute != null && !whiteListAttribute.contains(a.getId())) {
+                    log.warn("Skipping not whitelisted attribute (" + a.getId() + ")");
+                    continue;
+                } else if (whiteListAttribute == null && blackListAttributes.contains(a.getId())) {
+                    log.warn("Skipping blacklisted attribute (" + a.getId() + ")");
+                    continue;
+                }
+                log.info("[" + ++attributeCount + "] Attribute (" + a.getId() + ")" +
+                    a.getDescription());
+                final boolean valueListAttribute =
+                    a.getValues() != null && !a.getValues().isEmpty();
 
-    private void storeAttribute(final long eccairsEntitySctid, final EccairsAttribute a)
-        throws JsonProcessingException, UnirestException {
+                final long attributeSctId;
+                if (!aIdMap.containsKey(a.getId())) {
+                    final Map<Long, Set<String>> aDescriptions = createDescriptions(a, "Attribute");
 
-        System.out.println("Počet atributů: " + ++attributeCount);
-
-        // TODO also data types
-        if (a.getValues() != null && !a.getValues().isEmpty()) {
-            long attributeSctid = addConcept(a, objectAttributeConceptId, "attribute");
-            // TODO creating custom valuelist every time
-            final long valueListSctid = api.createConcept(
-                "Value for " + a.getDetailedDescription(),
-                valueConceptId,
-                branch,
-                moduleId,
-                "value");
-            api.addRelationship(
-                eccairsEntitySctid,
-                valueListSctid,
-                attributeSctid,
-                branch,
-                moduleId
-            );
-            if (!filteredValueLists.contains(a.getId())) {
-                for (final EccairsValue eccairsValue : a.getValues()) {
-                    storeValue(valueListSctid, eccairsValue);
+                    attributeSctId = api.createConcept(
+                        aDescriptions,
+                        Collections.singletonMap(SnomedConstants.IS_A,
+                            Collections.singleton(
+                                valueListAttribute ? SnomedConstants.CONCEPT_MODEL_OBJECT_ATTRIBUTE :
+                                    SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE)),
+                        a.getDescription(),
+                        branch,
+                        moduleId,
+                        "attribute");
+                    aIdMap.put(a.getId(), attributeSctId);
+                    if (valueListAttribute) {
+                        final Long id = storeValueList(a);
+                        relationships.putIfAbsent(attributeSctId, new HashSet<>());
+                        relationships.get(attributeSctId).add(id);
+                    }
+                } else {
+                    log.info(" - skipping " + a.getId() + " : " + a.getDescription() +
+                        ", already created. ");
                 }
             }
-        } else {
-//            long attributeSctid =
-            addConcept(a, dataAttributeConceptId, "attribute");
-            // TODO data attributes
         }
+
+        Long eId = null;
+        if (eIdMap.containsKey(e.getId())) {
+            log.info(" - skipping " + e.getId() + " : " + e.getDescription() + ", already created. ");
+            eId = eIdMap.get(e.getId());
+        }
+
+        if ( eId == null ) {
+            log.info(" - creating " + e.getId() + " : " + e.getDescription());
+            eId = api.createConcept(
+                descriptions,
+                relationships,
+                e.getDescription(),
+                branch,
+                moduleId,
+                "entity");
+            eIdMap.put(e.getId(), eId);
+        } else if (!relationships.isEmpty()) {
+            log.info(" - updating " + e.getId() + " : " + e.getDescription() + " with relationships " + relationships);
+            api.updateConcept(
+                descriptions,
+                relationships,
+                e.getDescription(),
+                branch,
+                moduleId,
+                "entity",
+                eId);
+        }
+
+        return eId;
     }
 
-    private void storeValue(final long parentSctId, final EccairsValue v)
+    private Long storeValueList(final EccairsAttribute a)
         throws JsonProcessingException, UnirestException {
-        final long valueSctid = api.createConcept(
-            v.getDescription(),
-            parentSctId,
+        final Map<Long, Set<String>> descriptions = createDescriptions(a, "value");
+        final Map<Long, Set<String>> descriptions2 = new HashMap<>();
+        descriptions.keySet().forEach(k -> {
+            descriptions2.put(k, descriptions.get(k).stream().map(d -> "Value for " + d).collect(
+                Collectors.toSet()));
+        });
+        final Map<Long, Set<String>> descriptions3 = new HashMap<>();
+        descriptions.keySet().forEach(k -> {
+            descriptions3.put(k, descriptions.get(k).stream().map(d -> "RefSet for " + d).collect(
+                Collectors.toSet()));
+        });
+
+
+        final Map<Long, Set<Long>> relationships = new HashMap<>();
+        relationships.put(SnomedConstants.IS_A, Collections.singleton(
+            SnomedEccairsConstants.VALUE));
+
+        final Long id = api.createConcept(
+            descriptions2,
+            relationships,
+            a.getDescription(),
             branch,
             moduleId,
             "value");
-        log.info("Počet hodnot: {} ", ++valueCount);
 
-        if (v.getValues() != null) {
-            for (final EccairsValue subV : v.getValues()) {
-                storeValue(valueSctid, subV);
+        final Map<Long, Set<Long>> relationships3 = new HashMap<>();
+        relationships3.put(SnomedConstants.IS_A, Collections.singleton(
+            SnomedConstants.SIMPLE_TYPE_REFERENCE_SET));
+        final Long idRefSet = api.createConcept(
+            descriptions3,
+            relationships3,
+            a.getDescription(),
+            branch,
+            moduleId,
+            "foundation metadata concept");
+
+        for (final EccairsValue eccairsValue : a.getValues()) {
+            storeValue(eccairsValue, id, idRefSet);
+        }
+
+        return id;
+    }
+
+    private Long storeValue(final EccairsValue value, final Long parentId, final Long idRefSet)
+        throws JsonProcessingException, UnirestException {
+        log.info("[" + ++valueCount + "] Value (" + value.getId() + ") : " + value.getDescription());
+
+        final Map<Long, Set<String>> descriptions = createDescriptions(value, "value");
+        final Map<Long, Set<Long>> relationships = Collections.singletonMap(SnomedConstants.IS_A,
+            Collections.singleton(parentId));
+
+        final Long id = api.createConcept(
+            descriptions,
+            relationships,
+            value.getDescription(),
+            branch,
+            moduleId,
+            "value");
+
+
+        api.addMemberToRefset(
+            id,
+            idRefSet,
+            branch,
+            moduleId);
+
+        if (value.getValues() != null && !sample) {
+            for (final EccairsValue subV : value.getValues()) {
+                storeValue(subV, id, idRefSet);
             }
         }
+        return id;
     }
 }
