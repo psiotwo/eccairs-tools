@@ -1,4 +1,4 @@
-package com.github.psiotwo.eccairs.rdf.model;
+package com.github.psiotwo.eccairs.rdf.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.github.psiotwo.eccairs.rdf.model;
+package com.github.psiotwo.eccairs.rdf.dto;
 
 import java.util.List;
 import lombok.Getter;
