@@ -135,9 +135,6 @@ public class PopulateSnomedServer {
         final Map<Long, Set<String>> descriptions = new HashMap<>();
         descriptions.put(SnomedConstants.FSN, Collections.singleton(e.getDetailedDescription()));
         final Set<String> synonyms = new HashSet<>();
-        if (!e.getDescription().trim().isEmpty()) {
-            synonyms.add(e.getDescription());
-        }
         if (!e.getExplanation().trim().isEmpty()) {
             descriptions.put(SnomedConstants.DEFINITION, Collections.singleton(e.getExplanation()));
         }
