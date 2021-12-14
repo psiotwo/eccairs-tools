@@ -14,4 +14,6 @@ public class CreateConceptRelationshipDto {
     private long destinationId;
 
     private long typeId;
+
+    private boolean inferred;
 }

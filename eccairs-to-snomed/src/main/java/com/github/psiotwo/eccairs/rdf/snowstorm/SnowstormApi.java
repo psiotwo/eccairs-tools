@@ -1,6 +1,6 @@
 package com.github.psiotwo.eccairs.rdf.snowstorm;
 
-import static com.github.psiotwo.eccairs.rdf.snowowl.SnowowlDtoHelper.postConceptPayloadInModel;
+import static com.github.psiotwo.eccairs.rdf.snowowl.SnowowlDtoHelper.conceptPayload;
 import static com.github.psiotwo.eccairs.rdf.snowowl.SnowowlDtoHelper.postRefsetMemberPayload;
 
 
@@ -79,7 +79,7 @@ public class SnowstormApi implements SnomedCtStoreApi {
                               final Long id)
         throws UnirestException, JsonProcessingException {
         final String c =
-            postConceptPayloadInModel(descriptions, relationships, preferredTerm, moduleId, semanticTag, id);
+            conceptPayload(descriptions, relationships, preferredTerm, moduleId, semanticTag, id);
         final HttpResponse<String> jsonResponse;
         jsonResponse = Unirest.post(serverUrl + "/browser/" + branch + "/concepts")
             .header("content-type", "application/json")
@@ -107,7 +107,7 @@ public class SnowstormApi implements SnomedCtStoreApi {
                               final Long id)
         throws UnirestException, JsonProcessingException {
         final String c =
-            postConceptPayloadInModel(descriptions, relationships, preferredTerm, moduleId, semanticTag, id);
+            conceptPayload(descriptions, relationships, preferredTerm, moduleId, semanticTag, id);
         final HttpResponse<String> jsonResponse =
             Unirest.put(serverUrl + "/browser/" + branch + "/concepts/" + id)
                 .header("content-type", "application/json")

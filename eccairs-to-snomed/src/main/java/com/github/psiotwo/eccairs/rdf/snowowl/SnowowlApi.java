@@ -78,7 +78,7 @@ public class SnowowlApi implements SnomedCtStoreApi {
         final HttpResponse<String> jsonResponse
             = Unirest.post(serverUrl + SNOMED_CT_V_3 + branch + "/concepts")
             .header("content-type", "application/json")
-            .body(SnowowlDtoHelper.postConceptPayloadInModel(descriptions, relationships, preferredTermInEnglish, moduleId,
+            .body(SnowowlDtoHelper.conceptPayload(descriptions, relationships, preferredTermInEnglish, moduleId,
                 semanticTag, id))
             .asString();
         if (jsonResponse.isSuccess()) {
@@ -104,7 +104,7 @@ public class SnowowlApi implements SnomedCtStoreApi {
         final HttpResponse<String> jsonResponse
             = Unirest.put(serverUrl + SNOMED_CT_V_3 + branch + "/concepts/" + id)
             .header("content-type", "application/json")
-            .body(SnowowlDtoHelper.postConceptPayloadInModel(descriptions, relationships, preferredTermInEnglish, moduleId,
+            .body(SnowowlDtoHelper.conceptPayload(descriptions, relationships, preferredTermInEnglish, moduleId,
                 semanticTag, id))
             .asString();
         if (jsonResponse.isSuccess()) {

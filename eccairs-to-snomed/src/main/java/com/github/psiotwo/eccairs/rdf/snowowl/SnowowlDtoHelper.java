@@ -31,7 +31,8 @@ public class SnowowlDtoHelper {
         prefAcceptabilityMap.put(EN_UK + "", "PREFERRED");
     }
 
-    public static String postRefsetMemberPayload(final Long member, final Long refsetId, final Long moduleId)
+    public static String postRefsetMemberPayload(final Long member, final Long refsetId,
+                                                 final Long moduleId)
         throws JsonProcessingException {
         final CreateRefsetMemberDto dto = new CreateRefsetMemberDto()
             .setActive(true)
@@ -44,11 +45,11 @@ public class SnowowlDtoHelper {
     }
 
 
-    public static String postConceptPayloadInModel(final Map<Long, Set<String>> descriptions,
-                                                   final Map<Long, Set<Long>> relationships,
-                                                   final String preferredTerm,
-                                                   final long moduleId, String semanticTag,
-                                                   final Long id)
+    public static String conceptPayload(final Map<Long, Set<String>> descriptions,
+                                        final Map<Long, Set<Long>> relationships,
+                                        final String preferredTerm,
+                                        final long moduleId, String semanticTag,
+                                        final Long id)
         throws JsonProcessingException {
         if (descriptions.get(SnomedConstants.FSN).isEmpty()) {
             throw new IllegalArgumentException();
@@ -68,7 +69,8 @@ public class SnowowlDtoHelper {
         final List<CreateConceptRelationshipDto> relationshipPayload = new ArrayList<>();
         relationships.forEach((k, v) -> {
             v.forEach(vv -> {
-                relationshipPayload.add(createConceptRelationshipDtoInModel(vv, k));
+                relationshipPayload.add(createConceptRelationshipDtoInModel(vv, k, true));
+                relationshipPayload.add(createConceptRelationshipDtoInModel(vv, k, false));
             });
         });
 
@@ -112,23 +114,12 @@ public class SnowowlDtoHelper {
 
     private static CreateConceptRelationshipDto createConceptRelationshipDtoInModel(
         final long destinationId,
-        final long typeId) {
+        final long typeId,
+        final boolean inferred) {
         return new CreateConceptRelationshipDto()
             .setActive(true)
             .setDestinationId(destinationId)
-            .setTypeId(typeId);
+            .setTypeId(typeId)
+            .setInferred(inferred);
     }
-
-//    private static CreateClassAxiomDto createConceptClassAxiomsDtoInModel(
-//        final long destinationId,
-//        final long typeId
-//    ) {
-//        return new CreateClassAxiomDto()
-//            .setRelationships(Collections.singletonList(
-//                new CreateConceptRelationshipDto()
-//                    .setActive(true)
-//                    .setDestinationId(destinationId)
-//                    .setTypeId(typeId)
-//            ));
-//    }
 }

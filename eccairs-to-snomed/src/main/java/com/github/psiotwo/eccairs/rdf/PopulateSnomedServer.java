@@ -75,9 +75,6 @@ public class PopulateSnomedServer {
     private final Map<Integer, Long> eIdMap = new HashMap<>();
     private final Map<Integer, Long> aIdMap = new HashMap<>();
 
-    private List<EccairsEntity> entities;
-    private List<EccairsAttribute> attributes;
-
     public PopulateSnomedServer(final SnomedCtStoreApi api,
                                 final String newBranch,
                                 final String taxonomyFile
@@ -89,9 +86,6 @@ public class PopulateSnomedServer {
         api.start();
 
         initModel();
-
-        entities = EccairsTaxonomyUtils.entities(d);
-        attributes = EccairsTaxonomyUtils.attributes(d);
 
         for (final EccairsEntity e : d.getEntities()) {
             if (!whiteListEntities.contains(e.getId())) {
@@ -133,7 +127,7 @@ public class PopulateSnomedServer {
     private Map<Long, Set<String>> createDescriptions(final EccairsTerm e, final String semanticTag)
         throws UnirestException {
         final Map<Long, Set<String>> descriptions = new HashMap<>();
-        descriptions.put(SnomedConstants.FSN, Collections.singleton(e.getDetailedDescription()));
+        descriptions.put(SnomedConstants.FSN, Collections.singleton(e.getDetailedDescription() + " (" + semanticTag + ")"));
         final Set<String> synonyms = new HashSet<>();
         if (!e.getExplanation().trim().isEmpty()) {
             descriptions.put(SnomedConstants.DEFINITION, Collections.singleton(e.getExplanation()));
@@ -147,15 +141,22 @@ public class PopulateSnomedServer {
         return descriptions;
     }
 
+    private Map<Long, Set<Long>> createRelationships(final Long parent)
+        throws UnirestException {
+        final Map<Long, Set<Long>> relationships = new HashMap<>();
+        final Set<Long> superClasses = new HashSet<>();
+        superClasses.add(parent);
+        relationships.put(SnomedConstants.IS_A, superClasses);
+        return relationships;
+    }
+
     private long storeEntity(final EccairsEntity e)
         throws JsonProcessingException, UnirestException {
 
         log.info("[" + ++entityCount + "] Entity (" + e.getId() + ")" + e.getDescription());
         final Map<Long, Set<String>> descriptions = createDescriptions(e, "Entity");
-        final Map<Long, Set<Long>> relationships = new HashMap<>();
+        final Map<Long, Set<Long>> relationships = createRelationships(SnomedEccairsConstants.ENTITY);
         relationships.put(SnomedEccairsConstants.HAS_SUB_ENTITY, new HashSet<>());
-        relationships.put(SnomedConstants.IS_A, Collections.singleton(
-            SnomedEccairsConstants.ENTITY));
 
         if (e.getEntities() != null) {
             for (final EccairsEntity ee : e.getEntities()) {
@@ -187,10 +188,8 @@ public class PopulateSnomedServer {
 
                     attributeSctId = api.createConcept(
                         aDescriptions,
-                        Collections.singletonMap(SnomedConstants.IS_A,
-                            Collections.singleton(
-                                valueListAttribute ? SnomedConstants.CONCEPT_MODEL_OBJECT_ATTRIBUTE :
-                                    SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE)),
+                        createRelationships(valueListAttribute ? SnomedConstants.CONCEPT_MODEL_OBJECT_ATTRIBUTE :
+                                    SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE),
                         a.getDescription(),
                         branch,
                         moduleId,
@@ -253,10 +252,7 @@ public class PopulateSnomedServer {
                 Collectors.toSet()));
         });
 
-
-        final Map<Long, Set<Long>> relationships = new HashMap<>();
-        relationships.put(SnomedConstants.IS_A, Collections.singleton(
-            SnomedEccairsConstants.VALUE));
+        final Map<Long, Set<Long>> relationships = createRelationships(SnomedEccairsConstants.VALUE);
 
         final Long id = api.createConcept(
             descriptions2,
@@ -289,8 +285,7 @@ public class PopulateSnomedServer {
         log.info("[" + ++valueCount + "] Value (" + value.getId() + ") : " + value.getDescription());
 
         final Map<Long, Set<String>> descriptions = createDescriptions(value, "value");
-        final Map<Long, Set<Long>> relationships = Collections.singletonMap(SnomedConstants.IS_A,
-            Collections.singleton(parentId));
+        final Map<Long, Set<Long>> relationships = createRelationships(parentId);
 
         final Long id = api.createConcept(
             descriptions,
