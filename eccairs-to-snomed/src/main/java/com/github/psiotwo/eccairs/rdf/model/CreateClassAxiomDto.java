@@ -1,4 +1,4 @@
-package com.github.psiotwo.eccairs.rdf.snowowl.model;
+package com.github.psiotwo.eccairs.rdf.model;
 
 import java.util.List;
 import lombok.Getter;
