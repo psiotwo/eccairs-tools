@@ -21,7 +21,7 @@ public interface SnomedCtStoreApi {
         throws UnirestException, JsonProcessingException;
 
     long createConcept(final Map<Long, Set<String>> descriptions,
-                       final Map<Long, Set<Long>> relationships,
+                       final Map<Long, Set<Object>> relationships,
                        final String preferredTermInEnglish,
                        final String branch,
                        final long moduleId,
@@ -29,7 +29,7 @@ public interface SnomedCtStoreApi {
         throws UnirestException, JsonProcessingException;
 
     long updateConcept(final Map<Long, Set<String>> descriptions,
-                       final Map<Long, Set<Long>> relationships,
+                       final Map<Long, Set<Object>> relationships,
                        final String preferredTermInEnglish,
                        final String branch,
                        final long moduleId,
@@ -37,7 +37,7 @@ public interface SnomedCtStoreApi {
         throws UnirestException, JsonProcessingException;
 
     default long createConcept(final Map<Long, Set<String>> descriptions,
-                               final Map<Long, Set<Long>> relationships,
+                               final Map<Long, Set<Object>> relationships,
                                final String preferredTermInEnglish,
                                final String branch,
                                final long moduleId, String semanticTag)
@@ -54,8 +54,22 @@ public interface SnomedCtStoreApi {
         throws UnirestException, JsonProcessingException {
         final Map<Long, Set<String>> descriptions = new HashMap<>();
         descriptions.put(SnomedConstants.FSN, Collections.singleton(conceptPL));
-        final Map<Long, Set<Long>> relationships = new HashMap<>();
+        final Map<Long, Set<Object>> relationships = new HashMap<>();
         relationships.put(SnomedConstants.IS_A, Collections.singleton(parentId));
         return createConcept(descriptions, relationships, conceptPL, branch, moduleId, semanticTag, id);
+    }
+
+    default long updateConcept(final String conceptPL,
+                               final long parentId,
+                               final String branch,
+                               final long moduleId,
+                               final String semanticTag,
+                               final Long id)
+        throws UnirestException, JsonProcessingException {
+        final Map<Long, Set<String>> descriptions = new HashMap<>();
+        descriptions.put(SnomedConstants.FSN, Collections.singleton(conceptPL));
+        final Map<Long, Set<Object>> relationships = new HashMap<>();
+        relationships.put(SnomedConstants.IS_A, Collections.singleton(parentId));
+        return updateConcept(descriptions, relationships, conceptPL, branch, moduleId, semanticTag, id);
     }
 }

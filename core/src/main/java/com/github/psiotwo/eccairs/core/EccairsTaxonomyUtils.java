@@ -37,6 +37,10 @@ public class EccairsTaxonomyUtils {
         }
     }
 
+    public static EccairsEntity getEntityForId(final EccairsDictionary d, final int id) {
+        return entities(d).stream().filter( e -> e.getId() == id ).findFirst().orElse(null);
+    }
+
     /**
      * Lists all ECCAIRS attributes in all entities in the dictionary.
      *

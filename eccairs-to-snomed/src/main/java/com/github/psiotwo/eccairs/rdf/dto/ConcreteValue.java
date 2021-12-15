@@ -1,6 +1,5 @@
 package com.github.psiotwo.eccairs.rdf.dto;
 
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -8,9 +7,11 @@ import lombok.experimental.Accessors;
 @Setter
 @Getter
 @Accessors(chain = true)
-public class CreateClassAxiomDto {
+public class ConcreteValue {
 
-    private long moduleId;
+    private String dataType;
 
-    private List<CreateConceptRelationshipDto> relationships;
+    private String value;
+
+    private String valueWithPrefix;
 }

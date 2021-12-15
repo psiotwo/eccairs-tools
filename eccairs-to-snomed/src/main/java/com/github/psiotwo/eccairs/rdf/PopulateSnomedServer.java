@@ -8,6 +8,7 @@ import com.github.psiotwo.eccairs.core.model.EccairsDictionary;
 import com.github.psiotwo.eccairs.core.model.EccairsEntity;
 import com.github.psiotwo.eccairs.core.model.EccairsTerm;
 import com.github.psiotwo.eccairs.core.model.EccairsValue;
+import com.google.common.base.Strings;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,7 +47,8 @@ import lombok.extern.slf4j.Slf4j;
 public class PopulateSnomedServer {
 
     // ECCAIRS module
-    private static final long moduleId = 21000250107L;
+    private static final long ECCAIRS_MODULE_ID = 21000250107L;
+    private static final long ECCAIRS_MODULE_ORGANIZATION_EXTENSION_ID = 31000250109L;
 
     private final SnomedCtStoreApi api;
 
@@ -74,6 +76,12 @@ public class PopulateSnomedServer {
      */
     private final Map<Integer, Long> eIdMap = new HashMap<>();
     private final Map<Integer, Long> aIdMap = new HashMap<>();
+    private final Map<Integer, Long> aRefSetIdMap = new HashMap<>();
+
+    /**
+     * Map from ECCAIRS id of the attribute to a map from an ECCAIRS id of the value to the SCTID of the value
+     */
+    private final Map<Integer, Map<Integer, Long>> aVIdMap = new HashMap<>();
 
     public PopulateSnomedServer(final SnomedCtStoreApi api,
                                 final String newBranch,
@@ -86,39 +94,61 @@ public class PopulateSnomedServer {
         api.start();
 
         initModel();
+        createEccairs(d);
+//        createExtension();
 
-        for (final EccairsEntity e : d.getEntities()) {
-            if (!whiteListEntities.contains(e.getId())) {
-                continue;
-            }
-            storeEntity(e);
-        }
         api.finish();
     }
 
+
+    private void createEccairs(final EccairsDictionary d) throws JsonProcessingException {
+        final Set<Integer> entityIds = new HashSet<>();
+
+        for (final EccairsEntity e : d.getEntities()) {
+//            if (!whiteListEntities.contains(e.getId())) {
+//                continue;
+//            }
+            storeEntity(d, EccairsTaxonomyUtils.getEntityForId(d, e.getId()), entityIds);
+        }
+    }
+
+    static int i = 0;
+
+//    private void createExtension() throws JsonProcessingException {
+//        final EccairsValue value = new EccairsValue()
+//            .setId(-1 * i++)
+//            .setDescription("Runway Incursion by UFO");
+//        final int id = 390;
+////        final int parentId = 99012398;
+//        final int parentId = 99000000;
+//        storeValue(value, aVIdMap.get(id).get(parentId), aRefSetIdMap.get(id), ECCAIRS_MODULE_ORGANIZATION_EXTENSION_ID, new HashMap<>());
+//    }
+
     private void initModel() throws UnirestException {
         try {
-            api.createConcept("ECCAIRS entity", SnomedConstants.CONCEPT, branch, moduleId, "entity",
+            api.createConcept("ECCAIRS entity", SnomedConstants.CONCEPT, branch, ECCAIRS_MODULE_ID,
+                "entity",
                 SnomedEccairsConstants.ENTITY);
-            api.createConcept("ECCAIRS value", SnomedConstants.CONCEPT, branch, moduleId, "value",
+            api.createConcept("ECCAIRS value", SnomedConstants.CONCEPT, branch, ECCAIRS_MODULE_ID,
+                "value",
                 SnomedEccairsConstants.VALUE);
-            api.createConcept("has report part", SnomedConstants.CONCEPT_MODEL_OBJECT_ATTRIBUTE,
+            api.createConcept("Refers to", SnomedConstants.CONCEPT_MODEL_OBJECT_ATTRIBUTE,
                 branch,
-                moduleId,
+                ECCAIRS_MODULE_ID,
                 "attribute",
                 SnomedEccairsConstants.HAS_SUB_ENTITY);
-            api.createConcept("has eccairs id", SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE,
-                branch,
-                moduleId,
-                "attribute", SnomedEccairsConstants.HAS_ID);
             api.createConcept("ECCAIRS module", SnomedConstants.MODULE,
                 branch,
-                moduleId,
-                "core metadata concept", moduleId);
-//        this.valueListConceptId = api.createConcept("ECCAIRS valuelist", "138875005", branch,
-//        moduleId, "eccairs valuelist");
-//        this.hasId = api.createConcept("has ECCAIRS id", CONCEPT_ATTRIBUTE, branch, moduleId,
-//        "attribute");
+                ECCAIRS_MODULE_ID,
+                "core metadata concept", ECCAIRS_MODULE_ID);
+            api.createConcept("ECCAIRS My Airport module", SnomedConstants.MODULE,
+                branch,
+                ECCAIRS_MODULE_ID,
+                "core metadata concept", ECCAIRS_MODULE_ORGANIZATION_EXTENSION_ID);
+            api.updateConcept("Has ECCAIRS id", SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE,
+                branch,
+                ECCAIRS_MODULE_ID,
+                "attribute", SnomedEccairsConstants.HAS_ID);
         } catch (Exception e) {
             log.error("Skipping errors during ", e);
         }
@@ -127,13 +157,14 @@ public class PopulateSnomedServer {
     private Map<Long, Set<String>> createDescriptions(final EccairsTerm e, final String semanticTag)
         throws UnirestException {
         final Map<Long, Set<String>> descriptions = new HashMap<>();
-        descriptions.put(SnomedConstants.FSN, Collections.singleton(e.getDetailedDescription() + " (" + semanticTag + ")"));
+        descriptions.put(SnomedConstants.FSN, Collections.singleton(
+            "[" + e.getId() + "] " + e.getDescription() + " (" + semanticTag + ")"));
         final Set<String> synonyms = new HashSet<>();
-        if (!e.getExplanation().trim().isEmpty()) {
+        if (Strings.nullToEmpty(e.getExplanation()).trim().isEmpty()) {
             descriptions.put(SnomedConstants.DEFINITION, Collections.singleton(e.getExplanation()));
         }
-        if (e.getId() != 0) {
-            synonyms.add(e.getId() + "");
+        if (Strings.nullToEmpty(e.getDetailedDescription()).trim().isEmpty()) {
+            synonyms.add(e.getDetailedDescription());
         }
 
         descriptions.put(SnomedConstants.SYNONYM, synonyms);
@@ -141,29 +172,35 @@ public class PopulateSnomedServer {
         return descriptions;
     }
 
-    private Map<Long, Set<Long>> createRelationships(final Long parent)
+    private Map<Long, Set<Object>> createRelationships(final EccairsTerm t, final Long parent)
         throws UnirestException {
-        final Map<Long, Set<Long>> relationships = new HashMap<>();
-        final Set<Long> superClasses = new HashSet<>();
+        final Map<Long, Set<Object>> relationships = new HashMap<>();
+        final Set<Object> superClasses = new HashSet<>();
         superClasses.add(parent);
         relationships.put(SnomedConstants.IS_A, superClasses);
+        relationships.put(SnomedEccairsConstants.HAS_ID, Collections.singleton(t.getId()));
         return relationships;
     }
 
-    private long storeEntity(final EccairsEntity e)
+    private long storeEntity(final EccairsDictionary d, final EccairsEntity e, final Set<Integer> entityIds)
         throws JsonProcessingException, UnirestException {
+        entityIds.add(e.getId());
 
         log.info("[" + ++entityCount + "] Entity (" + e.getId() + ")" + e.getDescription());
         final Map<Long, Set<String>> descriptions = createDescriptions(e, "Entity");
-        final Map<Long, Set<Long>> relationships = createRelationships(SnomedEccairsConstants.ENTITY);
+        final Map<Long, Set<Object>> relationships =
+            createRelationships(e, SnomedEccairsConstants.ENTITY);
+//        final Map<Long, Set<Object>> dataRelationships = createDataRelationships(e);
         relationships.put(SnomedEccairsConstants.HAS_SUB_ENTITY, new HashSet<>());
 
         if (e.getEntities() != null) {
             for (final EccairsEntity ee : e.getEntities()) {
-                if (!whiteListEntities.contains(ee.getId())) {
+                if (
+                    // !whiteListEntities.contains(ee.getId()) ||
+                    entityIds.contains(ee.getId())) {
                     continue;
                 }
-                long childConceptId = storeEntity(ee);
+                long childConceptId = storeEntity(d, EccairsTaxonomyUtils.getEntityForId(d, ee.getId()), entityIds);
                 relationships.get(SnomedEccairsConstants.HAS_SUB_ENTITY).add(childConceptId);
             }
         }
@@ -188,11 +225,12 @@ public class PopulateSnomedServer {
 
                     attributeSctId = api.createConcept(
                         aDescriptions,
-                        createRelationships(valueListAttribute ? SnomedConstants.CONCEPT_MODEL_OBJECT_ATTRIBUTE :
-                                    SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE),
+                        createRelationships(a,
+                            valueListAttribute ? SnomedConstants.CONCEPT_MODEL_OBJECT_ATTRIBUTE :
+                                SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE),
                         a.getDescription(),
                         branch,
-                        moduleId,
+                        ECCAIRS_MODULE_ID,
                         "attribute");
                     aIdMap.put(a.getId(), attributeSctId);
                     if (valueListAttribute) {
@@ -209,28 +247,31 @@ public class PopulateSnomedServer {
 
         Long eId = null;
         if (eIdMap.containsKey(e.getId())) {
-            log.info(" - skipping " + e.getId() + " : " + e.getDescription() + ", already created. ");
+            log.info(
+                " - skipping " + e.getId() + " : " + e.getDescription() + ", already created. ");
             eId = eIdMap.get(e.getId());
         }
 
-        if ( eId == null ) {
+        if (eId == null) {
             log.info(" - creating " + e.getId() + " : " + e.getDescription());
             eId = api.createConcept(
                 descriptions,
                 relationships,
                 e.getDescription(),
                 branch,
-                moduleId,
+                ECCAIRS_MODULE_ID,
                 "entity");
             eIdMap.put(e.getId(), eId);
         } else if (!relationships.isEmpty()) {
-            log.info(" - updating " + e.getId() + " : " + e.getDescription() + " with relationships " + relationships);
+            log.info(
+                " - updating " + e.getId() + " : " + e.getDescription() + " with relationships " +
+                    relationships);
             api.updateConcept(
                 descriptions,
                 relationships,
                 e.getDescription(),
                 branch,
-                moduleId,
+                ECCAIRS_MODULE_ID,
                 "entity",
                 eId);
         }
@@ -248,44 +289,53 @@ public class PopulateSnomedServer {
         });
         final Map<Long, Set<String>> descriptions3 = new HashMap<>();
         descriptions.keySet().forEach(k -> {
-            descriptions3.put(k, descriptions.get(k).stream().map(d -> "RefSet for " + d).collect(
-                Collectors.toSet()));
+            descriptions3.put(k,
+                descriptions.get(k).stream().map(d -> d + " reference set").collect(
+                    Collectors.toSet()));
         });
 
-        final Map<Long, Set<Long>> relationships = createRelationships(SnomedEccairsConstants.VALUE);
+        final Map<Long, Set<Object>> relationships =
+            createRelationships(a, SnomedEccairsConstants.VALUE);
 
         final Long id = api.createConcept(
             descriptions2,
             relationships,
             a.getDescription(),
             branch,
-            moduleId,
+            ECCAIRS_MODULE_ID,
             "value");
 
-        final Map<Long, Set<Long>> relationships3 = new HashMap<>();
+
+        final Map<Long, Set<Object>> relationships3 = new HashMap<>();
         relationships3.put(SnomedConstants.IS_A, Collections.singleton(
             SnomedConstants.SIMPLE_TYPE_REFERENCE_SET));
         final Long idRefSet = api.createConcept(
             descriptions3,
             relationships3,
-            a.getDescription(),
+            a.getDescription() + " reference set",
             branch,
-            moduleId,
+            ECCAIRS_MODULE_ID,
             "foundation metadata concept");
+        aRefSetIdMap.put(a.getId(), idRefSet);
+
+        aVIdMap.putIfAbsent(a.getId(), new HashMap<>());
 
         for (final EccairsValue eccairsValue : a.getValues()) {
-            storeValue(eccairsValue, id, idRefSet);
+            storeValue(eccairsValue, id, idRefSet, ECCAIRS_MODULE_ID, aVIdMap.get(a.getId()));
         }
 
         return id;
     }
 
-    private Long storeValue(final EccairsValue value, final Long parentId, final Long idRefSet)
+    private Long storeValue(final EccairsValue value, final Long parentId, final Long idRefSet, final Long moduleId,
+                            final Map<Integer, Long> valueMap)
         throws JsonProcessingException, UnirestException {
-        log.info("[" + ++valueCount + "] Value (" + value.getId() + ") : " + value.getDescription());
+        log.info(
+            "[" + ++valueCount + "] Value (" + value.getId() + ") : " + value.getDescription());
 
         final Map<Long, Set<String>> descriptions = createDescriptions(value, "value");
-        final Map<Long, Set<Long>> relationships = createRelationships(parentId);
+        final Map<Long, Set<Object>> relationships = createRelationships(value, parentId);
+
 
         final Long id = api.createConcept(
             descriptions,
@@ -295,6 +345,7 @@ public class PopulateSnomedServer {
             moduleId,
             "value");
 
+        valueMap.put(value.getId(), id);
 
         api.addMemberToRefset(
             id,
@@ -304,7 +355,7 @@ public class PopulateSnomedServer {
 
         if (value.getValues() != null && !sample) {
             for (final EccairsValue subV : value.getValues()) {
-                storeValue(subV, id, idRefSet);
+                storeValue(subV, id, idRefSet, moduleId, valueMap);
             }
         }
         return id;

@@ -9,7 +9,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.mashape.unirest/unirest-java
     implementation 'org.snomed.otf:snomed-owl-toolkit:3.0.5'
-    implementation 'com.konghq:unirest-java:3.7.02'
+    implementation 'org.snomed.otf:snomed-owl-toolkit:3.0.5'
+
+    implementation 'com.konghq:unirest-java:3.13.4'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
 
     implementation 'org.slf4j:slf4j-simple:1.7.32'

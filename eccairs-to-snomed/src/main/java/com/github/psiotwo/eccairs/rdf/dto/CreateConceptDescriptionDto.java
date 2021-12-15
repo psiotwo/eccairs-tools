@@ -21,4 +21,6 @@ public class CreateConceptDescriptionDto {
     private String term;
 
     private long typeId;
+
+    private long moduleId;
 }

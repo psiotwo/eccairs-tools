@@ -1,7 +1,7 @@
 package com.github.psiotwo.eccairs.rdf.snowstorm;
 
-import static com.github.psiotwo.eccairs.rdf.snowowl.SnowowlDtoHelper.conceptPayload;
-import static com.github.psiotwo.eccairs.rdf.snowowl.SnowowlDtoHelper.postRefsetMemberPayload;
+import static com.github.psiotwo.eccairs.rdf.DtoHelper.conceptPayload;
+import static com.github.psiotwo.eccairs.rdf.DtoHelper.postRefsetMemberPayload;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,7 +20,10 @@ public class SnowstormApi implements SnomedCtStoreApi {
     public SnowstormApi(String serverUrl) {
         this.serverUrl = serverUrl;
         Unirest.config()
-            .socketTimeout(0);
+            .socketTimeout(0)
+            .connectTimeout(0)
+            .automaticRetries(true)
+            .retryAfter(true,20);
     }
 
     public String createBranch(final String parentPath, final String childName)
@@ -71,7 +74,7 @@ public class SnowstormApi implements SnomedCtStoreApi {
 
 
     public long createConcept(final Map<Long, Set<String>> descriptions,
-                              final Map<Long, Set<Long>> relationships,
+                              final Map<Long, Set<Object>> relationships,
                               final String preferredTerm,
                               final String branch,
                               final long moduleId,
@@ -79,7 +82,7 @@ public class SnowstormApi implements SnomedCtStoreApi {
                               final Long id)
         throws UnirestException, JsonProcessingException {
         final String c =
-            conceptPayload(descriptions, relationships, preferredTerm, moduleId, semanticTag, id);
+            conceptPayload(descriptions, relationships, preferredTerm, moduleId, id);
         final HttpResponse<String> jsonResponse;
         jsonResponse = Unirest.post(serverUrl + "/browser/" + branch + "/concepts")
             .header("content-type", "application/json")
@@ -99,7 +102,7 @@ public class SnowstormApi implements SnomedCtStoreApi {
     }
 
     public long updateConcept(final Map<Long, Set<String>> descriptions,
-                              final Map<Long, Set<Long>> relationships,
+                              final Map<Long, Set<Object>> relationships,
                               final String preferredTerm,
                               final String branch,
                               final long moduleId,
@@ -107,7 +110,7 @@ public class SnowstormApi implements SnomedCtStoreApi {
                               final Long id)
         throws UnirestException, JsonProcessingException {
         final String c =
-            conceptPayload(descriptions, relationships, preferredTerm, moduleId, semanticTag, id);
+            conceptPayload(descriptions, relationships, preferredTerm, moduleId, id);
         final HttpResponse<String> jsonResponse =
             Unirest.put(serverUrl + "/browser/" + branch + "/concepts/" + id)
                 .header("content-type", "application/json")
