@@ -95,7 +95,6 @@ public class PopulateSnomedServer {
 
         initModel();
         createEccairs(d);
-//        createExtension();
 
         api.finish();
     }
@@ -105,24 +104,23 @@ public class PopulateSnomedServer {
         final Set<Integer> entityIds = new HashSet<>();
 
         for (final EccairsEntity e : d.getEntities()) {
-//            if (!whiteListEntities.contains(e.getId())) {
-//                continue;
-//            }
+            if (entityIds.contains(e.getId())) {
+                continue;
+            }
             storeEntity(d, EccairsTaxonomyUtils.getEntityForId(d, e.getId()), entityIds);
         }
     }
 
-    static int i = 0;
-
-//    private void createExtension() throws JsonProcessingException {
-//        final EccairsValue value = new EccairsValue()
-//            .setId(-1 * i++)
-//            .setDescription("Runway Incursion by UFO");
-//        final int id = 390;
-////        final int parentId = 99012398;
-//        final int parentId = 99000000;
-//        storeValue(value, aVIdMap.get(id).get(parentId), aRefSetIdMap.get(id), ECCAIRS_MODULE_ORGANIZATION_EXTENSION_ID, new HashMap<>());
-//    }
+    private boolean isValid(final EccairsAttribute a) {
+        if (whiteListAttribute != null && !whiteListAttribute.contains(a.getId())) {
+            log.warn("Skipping not whitelisted attribute (" + a.getId() + ")");
+            return false;
+        } else if (whiteListAttribute == null && blackListAttributes.contains(a.getId())) {
+            log.warn("Skipping blacklisted attribute (" + a.getId() + ")");
+            return false;
+        }
+        return true;
+    }
 
     private void initModel() throws UnirestException {
         try {
@@ -195,9 +193,7 @@ public class PopulateSnomedServer {
 
         if (e.getEntities() != null) {
             for (final EccairsEntity ee : e.getEntities()) {
-                if (
-                    // !whiteListEntities.contains(ee.getId()) ||
-                    entityIds.contains(ee.getId())) {
+                if (entityIds.contains(ee.getId())) {
                     continue;
                 }
                 long childConceptId = storeEntity(d, EccairsTaxonomyUtils.getEntityForId(d, ee.getId()), entityIds);
@@ -206,12 +202,7 @@ public class PopulateSnomedServer {
         }
         if (e.getAttributes() != null) {
             for (final EccairsAttribute a : e.getAttributes()) {
-
-                if (whiteListAttribute != null && !whiteListAttribute.contains(a.getId())) {
-                    log.warn("Skipping not whitelisted attribute (" + a.getId() + ")");
-                    continue;
-                } else if (whiteListAttribute == null && blackListAttributes.contains(a.getId())) {
-                    log.warn("Skipping blacklisted attribute (" + a.getId() + ")");
+                if (!isValid(a)) {
                     continue;
                 }
                 log.info("[" + ++attributeCount + "] Attribute (" + a.getId() + ")" +
@@ -304,7 +295,6 @@ public class PopulateSnomedServer {
             branch,
             ECCAIRS_MODULE_ID,
             "value");
-
 
         final Map<Long, Set<Object>> relationships3 = new HashMap<>();
         relationships3.put(SnomedConstants.IS_A, Collections.singleton(
