@@ -46,25 +46,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PopulateSnomedServer {
 
-    // ECCAIRS module
-    private static final long ECCAIRS_MODULE_ID = 21000250107L;
-    private static final long ECCAIRS_MODULE_ORGANIZATION_EXTENSION_ID = 31000250109L;
-
     private final SnomedCtStoreApi api;
 
     /**
      * White list takes precedence.
      */
-    private final List<Integer> whiteListEntities =
-        Arrays.asList(1, 3, 4, 12, 14, 15, 24);
-    private final List<Integer> whiteListAttribute =
-        Arrays.asList(430, 390, 391, 385, 386, 392, 393, 394);
+//    private final List<Integer> whiteListEntities =
+//        Arrays.asList(1, 3, 4, 12, 14, 15, 24);
+    private final List<Integer> whiteListAttribute = null;
+//        Arrays.asList(430, 390, 391, 385, 386, 392, 393, 394);
     private final List<Integer> blackListAttributes = Arrays.asList(5, 16, 21, 167, 215, 228);
 
     /**
      * Only generate first level of values - a sample.
      */
-    private boolean sample = false;
+    private boolean sample = true;
 
     private final String branch;
     private long entityCount = 0;
@@ -124,28 +120,28 @@ public class PopulateSnomedServer {
 
     private void initModel() throws UnirestException {
         try {
-            api.createConcept("ECCAIRS entity", SnomedConstants.CONCEPT, branch, ECCAIRS_MODULE_ID,
+            api.createConcept("ECCAIRS entity", SnomedConstants.CONCEPT, branch, SnomedEccairsConstants.ECCAIRS_MODULE_ID,
                 "entity",
                 SnomedEccairsConstants.ENTITY);
-            api.createConcept("ECCAIRS value", SnomedConstants.CONCEPT, branch, ECCAIRS_MODULE_ID,
+            api.createConcept("ECCAIRS value", SnomedConstants.CONCEPT, branch, SnomedEccairsConstants.ECCAIRS_MODULE_ID,
                 "value",
                 SnomedEccairsConstants.VALUE);
             api.createConcept("Refers to", SnomedConstants.CONCEPT_MODEL_OBJECT_ATTRIBUTE,
                 branch,
-                ECCAIRS_MODULE_ID,
+                SnomedEccairsConstants.ECCAIRS_MODULE_ID,
                 "attribute",
                 SnomedEccairsConstants.HAS_SUB_ENTITY);
             api.createConcept("ECCAIRS module", SnomedConstants.MODULE,
                 branch,
-                ECCAIRS_MODULE_ID,
-                "core metadata concept", ECCAIRS_MODULE_ID);
+                SnomedEccairsConstants.ECCAIRS_MODULE_ID,
+                "core metadata concept", SnomedEccairsConstants.ECCAIRS_MODULE_ID);
             api.createConcept("ECCAIRS My Airport module", SnomedConstants.MODULE,
                 branch,
-                ECCAIRS_MODULE_ID,
-                "core metadata concept", ECCAIRS_MODULE_ORGANIZATION_EXTENSION_ID);
+                SnomedEccairsConstants.ECCAIRS_MODULE_ID,
+                "core metadata concept", SnomedEccairsConstants.ECCAIRS_MODULE_ORGANIZATION_EXTENSION_ID);
             api.updateConcept("Has ECCAIRS id", SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE,
                 branch,
-                ECCAIRS_MODULE_ID,
+                SnomedEccairsConstants.ECCAIRS_MODULE_ID,
                 "attribute", SnomedEccairsConstants.HAS_ID);
         } catch (Exception e) {
             log.error("Skipping errors during ", e);
@@ -193,10 +189,19 @@ public class PopulateSnomedServer {
 
         if (e.getEntities() != null) {
             for (final EccairsEntity ee : e.getEntities()) {
+                Long childConceptId = null;
                 if (entityIds.contains(ee.getId())) {
-                    continue;
+                    if (eIdMap.containsKey(ee.getId())) {
+                        childConceptId = eIdMap.get(ee.getId());
+                    } else {
+                        continue;
+                    }
                 }
-                long childConceptId = storeEntity(d, EccairsTaxonomyUtils.getEntityForId(d, ee.getId()), entityIds);
+
+                if ( childConceptId == null ) {
+                    childConceptId = storeEntity(d, EccairsTaxonomyUtils.getEntityForId(d, ee.getId()), entityIds);
+                }
+
                 relationships.get(SnomedEccairsConstants.HAS_SUB_ENTITY).add(childConceptId);
             }
         }
@@ -221,7 +226,7 @@ public class PopulateSnomedServer {
                                 SnomedConstants.CONCEPT_MODEL_DATA_ATTRIBUTE),
                         a.getDescription(),
                         branch,
-                        ECCAIRS_MODULE_ID,
+                        SnomedEccairsConstants.ECCAIRS_MODULE_ID,
                         "attribute");
                     aIdMap.put(a.getId(), attributeSctId);
                     if (valueListAttribute) {
@@ -250,7 +255,7 @@ public class PopulateSnomedServer {
                 relationships,
                 e.getDescription(),
                 branch,
-                ECCAIRS_MODULE_ID,
+                SnomedEccairsConstants.ECCAIRS_MODULE_ID,
                 "entity");
             eIdMap.put(e.getId(), eId);
         } else if (!relationships.isEmpty()) {
@@ -262,7 +267,7 @@ public class PopulateSnomedServer {
                 relationships,
                 e.getDescription(),
                 branch,
-                ECCAIRS_MODULE_ID,
+                SnomedEccairsConstants.ECCAIRS_MODULE_ID,
                 "entity",
                 eId);
         }
@@ -293,7 +298,7 @@ public class PopulateSnomedServer {
             relationships,
             a.getDescription(),
             branch,
-            ECCAIRS_MODULE_ID,
+            SnomedEccairsConstants.ECCAIRS_MODULE_ID,
             "value");
 
         final Map<Long, Set<Object>> relationships3 = new HashMap<>();
@@ -304,14 +309,14 @@ public class PopulateSnomedServer {
             relationships3,
             a.getDescription() + " reference set",
             branch,
-            ECCAIRS_MODULE_ID,
+            SnomedEccairsConstants.ECCAIRS_MODULE_ID,
             "foundation metadata concept");
         aRefSetIdMap.put(a.getId(), idRefSet);
 
         aVIdMap.putIfAbsent(a.getId(), new HashMap<>());
 
         for (final EccairsValue eccairsValue : a.getValues()) {
-            storeValue(eccairsValue, id, idRefSet, ECCAIRS_MODULE_ID, aVIdMap.get(a.getId()));
+            storeValue(eccairsValue, id, idRefSet, SnomedEccairsConstants.ECCAIRS_MODULE_ID, aVIdMap.get(a.getId()));
         }
 
         return id;

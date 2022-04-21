@@ -9,6 +9,9 @@ public class SnomedEccairsConstants {
     // correct is : 1931000250104L
     // now abusing 1142142004 has pack size, because SnowStorm does not allow us to create a MRCM
     static final long HAS_ID = 1142142004l;
+    // ECCAIRS module
+    static final long ECCAIRS_MODULE_ID = 21000250107L;
+    static final long ECCAIRS_MODULE_ORGANIZATION_EXTENSION_ID = 31000250109L;
 
     private SnomedEccairsConstants() {
     }

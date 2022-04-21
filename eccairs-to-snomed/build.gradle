@@ -2,7 +2,7 @@ plugins {
     id 'application'
 }
 
-mainClassName = 'com.github.psiotwo.eccairs.snomed.snowowl.PopulateSnowowl'
+mainClassName = 'com.github.psiotwo.eccairs.rdf.PopulateSnomedServer'
 
 dependencies {
     implementation project(':core')
