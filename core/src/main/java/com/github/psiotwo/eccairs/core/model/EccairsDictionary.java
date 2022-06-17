@@ -2,11 +2,9 @@ package com.github.psiotwo.eccairs.core.model;
 
 import java.text.MessageFormat;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
+
+import com.github.psiotwo.eccairs.core.EccairsTaxonomyUtils;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -15,8 +13,10 @@ import lombok.experimental.Accessors;
 @XmlRootElement(name = "DICTIONARY")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class EccairsDictionary {
-    @XmlAttribute(name = "TAXONOMY")
+
+    @XmlTransient
     private String taxonomy;
+
     @XmlAttribute(name = "VERSION")
     private String version;
     @XmlAttribute(name = "LANGUAGE")
@@ -26,6 +26,15 @@ public class EccairsDictionary {
 
     @XmlElement(name = "ENTITY")
     private List<EccairsEntity> entities;
+
+    @XmlAttribute(name = "TAXONOMY")
+    public String getTaxonomy() {
+        return taxonomy;
+    }
+
+    public void setTaxonomy( final String taxonomy ) {
+        this.taxonomy = taxonomy == null ? taxonomy : EccairsTaxonomyUtils.getTaxonomyName(taxonomy);
+    }
 
     public String toString() {
         return MessageFormat.format("ECCAIRS Taxonomy {0} (ver. {1}), language {2}",

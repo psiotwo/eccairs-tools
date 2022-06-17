@@ -23,12 +23,7 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.ReifiedStatement;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.vocabulary.RDFS;
@@ -117,7 +112,6 @@ public class EccairsTaxonomyToRdf {
     private void transformDictionary() {
         this.lang = getLang(dictionary.getLanguage());
         final Ontology o = model.createOntology(getVersionedOntologyIri());
-        o.addProperty(ap(Vocabulary.s_p_has_key), dictionary.getKey());
     }
 
     private AnnotationProperty ap(final String uri) {
@@ -268,8 +262,10 @@ public class EccairsTaxonomyToRdf {
             ResourceFactory.createLangLiteral(term.getDescription(), lang));
         resource.addProperty(dp(Vocabulary.s_p_has_detailed_description),
             ResourceFactory.createLangLiteral(term.getDetailedDescription(), lang));
-        resource.addProperty(dp(Vocabulary.s_p_has_explanation),
-            ResourceFactory.createLangLiteral(term.getExplanation(), lang));
+        if ( term.getExplanation() != null ) {
+            resource.addProperty(dp(Vocabulary.s_p_has_explanation),
+                    ResourceFactory.createLangLiteral(term.getExplanation(), lang));
+        }
     }
 
     private String getVersionedOntologyIriBase() {

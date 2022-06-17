@@ -20,6 +20,5 @@ public class Vocabulary {
     public final static String s_p_has_min_instance = NS + "has-min-instance";
     public final static String s_p_has_max_instance = NS + "has-max-instance";
     public final static String s_p_has_value_type = NS + "has-value-type";
-    public final static String s_p_has_key = NS + "has-key";
     public final static String s_c_value = NS + "value";
 }

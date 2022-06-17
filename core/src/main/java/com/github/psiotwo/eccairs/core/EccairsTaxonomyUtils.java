@@ -114,4 +114,8 @@ public class EccairsTaxonomyUtils {
                 .map(v -> v.getId() + " - " + v.getDescription())
                 .collect(Collectors.toList());
     }
+
+    public static String getTaxonomyName(final String taxonomyValue) {
+        return taxonomyValue.replaceAll("([\\d]+[.])*[\\d]+","").trim();
+    }
 }

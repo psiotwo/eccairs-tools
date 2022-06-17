@@ -68,4 +68,14 @@ class EccairsTaxonomyUtilsTest {
 
         assertEquals(values, new HashSet<>(EccairsTaxonomyUtils.getValues(attribute)));
     }
+
+    @Test
+    void testGetTaxonomyNameStripsVersionFromName() {
+        assertEquals("ECCAIRS Aviation", EccairsTaxonomyUtils.getTaxonomyName("ECCAIRS Aviation 5.1.0.0"));
+    }
+
+    @Test
+    void testGetTaxonomyNameDoesNotStripAnythingFromNameIfItIsNotSuffixedWithVersion() {
+        assertEquals("ECCAIRS Aviation", EccairsTaxonomyUtils.getTaxonomyName("ECCAIRS Aviation"));
+    }
 }
