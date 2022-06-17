@@ -32,8 +32,9 @@ public class EccairsDictionary {
         return taxonomy;
     }
 
-    public void setTaxonomy( final String taxonomy ) {
+    public String setTaxonomy( final String taxonomy ) {
         this.taxonomy = taxonomy == null ? taxonomy : EccairsTaxonomyUtils.getTaxonomyName(taxonomy);
+        return taxonomy;
     }
 
     public String toString() {
