@@ -5,6 +5,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import com.github.psiotwo.eccairs.core.StringTrimAdapter;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -14,6 +17,7 @@ import lombok.experimental.Accessors;
 public class EccairsValue implements EccairsTerm {
     @XmlAttribute(name = "ID", required = true)
     private int id;
+    @XmlJavaTypeAdapter(StringTrimAdapter.class)
     @XmlAttribute(name = "DESCRIPTION")
     private String description;
     @XmlAttribute(name = "DETAILED-DESCRIPTION")
