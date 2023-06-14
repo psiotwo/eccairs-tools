@@ -8,6 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.github.psiotwo.eccairs.core.model.EccairsDictionary;
 import java.nio.charset.StandardCharsets;
+
+import com.github.psiotwo.eccairs.rdf.TaxonomyService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,9 @@ public class EccairsControllerTest {
     @MockBean
     private EccairsService service;
 
+    @MockBean
+    private TaxonomyService taxonomyService;
+
     @Test
     void eccairsTaxonomyExistsForExistingTaxonomy_returns200() throws Exception {
         when(service.eccairsTaxonomyExists("aviation", "3.4.0.2"))
@@ -40,7 +45,7 @@ public class EccairsControllerTest {
     }
 
     @Test
-    void eccairsTaxonomyExistsForNonExisitngTaxonomy_returns404() throws Exception {
+    void eccairsTaxonomyExistsForNonExistingTaxonomy_returns404() throws Exception {
         when(service.eccairsTaxonomyExists("aviation", "3.4.0.2"))
             .thenReturn(true);
         mockMvc.perform(

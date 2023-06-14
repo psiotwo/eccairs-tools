@@ -6,7 +6,12 @@ In particular it serves to:
 - parse ECCAIRS Taxonomy distribution
 - parse RIT Taxonomy distribution
 - comparison of ECCAIRS and RIT versions
-- (experimental) export of ECCAIRS into SNOMED format 
+- (experimental) export of ECCAIRS into SNOMED format
+
+### Value Lists
+
+The taxonomy XML file provided by ECCAIRS no longer (since version 5.1.0.0) contains hierarchy information on value lists. Therefore, the tool attempts
+to resolve the hierarchy information from the ECCAIRS taxonomy service itself. For this to work, the taxonomy service URL must be configured.
 
 ## Import ECCAIRS taxonomy into an RDF repository
 1. Build the project using `gradle build`

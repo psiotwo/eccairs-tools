@@ -5,6 +5,8 @@ import com.github.psiotwo.eccairs.rdf.EccairsTaxonomyToRdf;
 import com.github.psiotwo.eccairs.rdf.EccairsUtils;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.github.psiotwo.eccairs.rdf.TaxonomyService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ParameterizedSparqlString;
@@ -20,18 +22,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class JenaEccairsDao implements EccairsDao {
 
-    private Conf conf;
+    private final Conf conf;
 
-    @Autowired
-    public JenaEccairsDao(final Conf conf) {
+    private final TaxonomyService taxonomyService;
+
+    public JenaEccairsDao(final Conf conf, TaxonomyService taxonomyService) {
         this.conf = conf;
+        this.taxonomyService = taxonomyService;
     }
 
     public void saveEccairs(EccairsDictionary dictionary) {
         log.info("Saving: '{}, ver. {}'", dictionary.getTaxonomy(), dictionary.getVersion());
 
-        final EccairsTaxonomyToRdf exporter =
-            new EccairsTaxonomyToRdf(conf.getBaseUri(), dictionary);
+        final EccairsTaxonomyToRdf exporter = new EccairsTaxonomyToRdf(conf.getBaseUri(), dictionary, taxonomyService);
         final Dataset dataset = exporter.transform();
         log.info("- taxonomy file parsed.");
 

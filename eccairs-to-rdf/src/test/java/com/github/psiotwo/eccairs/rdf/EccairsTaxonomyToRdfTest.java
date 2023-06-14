@@ -30,7 +30,7 @@ public class EccairsTaxonomyToRdfTest {
     @Test
     public void exporterWritesTaxonomyNameCorrectly() {
         final EccairsDictionary dictionary = this.dictionary;
-        final EccairsTaxonomyToRdf r = new EccairsTaxonomyToRdf("https://test.org/", dictionary);
+        final EccairsTaxonomyToRdf r = new EccairsTaxonomyToRdf("https://test.org/", dictionary, null);
         final Dataset dataset = r.transform();
         final Model model = dataset.getUnionModel();
         final List<Resource> list = model.listSubjectsWithProperty(RDF.type, OWL.Ontology).toList();
@@ -43,7 +43,7 @@ public class EccairsTaxonomyToRdfTest {
     public void exporterWritesEntityAttributes() {
         final EccairsDictionary dictionary = this.dictionary;
         dictionary.setEntities(Collections.singletonList(entity));
-        final EccairsTaxonomyToRdf r = new EccairsTaxonomyToRdf("https://test.org/", dictionary);
+        final EccairsTaxonomyToRdf r = new EccairsTaxonomyToRdf("https://test.org/", dictionary, null);
         final Dataset dataset = r.transform();
         final Model model = dataset.getUnionModel();
         final List<Resource> entities =
