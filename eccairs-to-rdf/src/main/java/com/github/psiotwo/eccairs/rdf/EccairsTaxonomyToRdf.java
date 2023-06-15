@@ -9,10 +9,8 @@ import com.github.psiotwo.eccairs.core.model.EccairsValue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.ontology.AnnotationProperty;
 import org.apache.jena.ontology.DatatypeProperty;
@@ -57,6 +55,8 @@ public class EccairsTaxonomyToRdf {
      */
     private String lang;
 
+    private final TaxonomyService taxonomyService;
+
     private OntModel model;
     private Model mapping;
 
@@ -69,9 +69,10 @@ public class EccairsTaxonomyToRdf {
      * @param base       base IRI of the ontology
      * @param dictionary RDF dictionary to transform
      */
-    public EccairsTaxonomyToRdf(final String base, final EccairsDictionary dictionary) {
+    public EccairsTaxonomyToRdf(final String base, final EccairsDictionary dictionary, TaxonomyService taxonomyService) {
         this.dictionary = dictionary;
         this.base = base;
+        this.taxonomyService = taxonomyService;
     }
 
     private Map<String, String> setupNamespaces() {
@@ -141,10 +142,8 @@ public class EccairsTaxonomyToRdf {
                 parent.getURI().substring(parent.getURI().lastIndexOf("-") - 1)
                 + "-" + child.getURI()
                 .substring(child.getURI().lastIndexOf("-") - 1));
-        rs.addProperty(ap(Vocabulary.s_p_has_min_instance),
-            minInstance);
-        rs.addProperty(ap(Vocabulary.s_p_has_max_instance),
-            maxInstance);
+        rs.addProperty(ap(Vocabulary.s_p_has_min_instance), minInstance);
+        rs.addProperty(ap(Vocabulary.s_p_has_max_instance), maxInstance);
         if (isLink != null) {
             rs.addProperty(ap(Vocabulary.s_p_is_link), isLink);
         }
@@ -182,21 +181,33 @@ public class EccairsTaxonomyToRdf {
         final String localName = "a-" + attribute.getId();
         final Individual rAttribute =
             model.createIndividual(getVersionedOntologyIriBase() + localName, cAttribute);
+        final String valueListId = "vl-a-" + attribute.getId();
+        final String valueListUri = getVersionedOntologyIriBase() + valueListId;
+        if (model.contains(rAttribute, op(Vocabulary.s_p_has_child), ResourceFactory.createResource(valueListUri))) {
+            log.debug("Model already contains attribute {} with value list. Skipping its repeated processing.", rAttribute);
+            return rAttribute;
+        }
         addProperties(rAttribute, attribute);
         addTermMapping(localName);
         if (!Optional.ofNullable(attribute.getValues()).orElse(Collections.emptyList()).isEmpty()) {
             final OntClass cValueList = model.createClass(Vocabulary.s_c_value_list);
-            final String valueListId = "vl-a-" + attribute.getId();
-            final String valueListUri = getVersionedOntologyIriBase() + valueListId;
             addTermMapping(valueListId);
             final Individual rValueList = model.createIndividual(valueListUri, cValueList);
             createSubValueLink(rAttribute, rValueList);
             model.setNsPrefix("e-" + valueListId, valueListUri + "/");
-            Optional.ofNullable(attribute.getValues()).orElse(Collections.emptyList())
-                .forEach(value -> {
+            if (taxonomyService != null && taxonomyService.hasHierarchicalValueList(attribute.getId())) {
+                log.debug("Attribute {} has hierarchical value list. Fetching the value list from taxonomy service to preserve hierarchy.", attribute.getId());
+                final List<EccairsValue> valueList = taxonomyService.getValueList(attribute.getId());
+                valueList.forEach(value -> {
                     final Individual rValue = transformValue(value, valueListId);
                     createSubValueLink(rValueList, rValue);
                 });
+            } else {
+                attribute.getValues().forEach(value -> {
+                    final Individual rValue = transformValue(value, valueListId);
+                    createSubValueLink(rValueList, rValue);
+                });
+            }
         }
         return rAttribute;
     }
@@ -288,7 +299,7 @@ public class EccairsTaxonomyToRdf {
     public static void main(final String[] args) throws IOException {
         final EccairsTaxonomyParser p = new EccairsTaxonomyParser();
         final EccairsDictionary d = p.parse(new File(args[0]));
-        final EccairsTaxonomyToRdf r = new EccairsTaxonomyToRdf("http://test.org/", d);
+        final EccairsTaxonomyToRdf r = new EccairsTaxonomyToRdf("http://test.org/", d, null);
         final Dataset dataset = r.transform();
         RDFDataMgr.write(new FileOutputStream(args[0] + ".trig"), dataset, RDFFormat.TRIG_PRETTY);
     }
